@@ -1,187 +1,175 @@
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Leaf, ShoppingCart, Star } from "lucide-react"
+"use client";
 
-export default function Home() {
+import { ReactNode, useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+import { Minus, Plus, Trash } from "lucide-react";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
+import { useAuthState } from "react-firebase-hooks/auth";
+
+interface CartItem {
+  description: ReactNode;
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
+
+export default function CartPage() {
+  const [user] = useAuthState(auth);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      const fetchCart = async () => {
+        const cartRef = doc(db, "carts", user.uid);
+        const cartSnap = await getDoc(cartRef);
+        if (cartSnap.exists()) {
+          setCartItems(cartSnap.data().items || []);
+        }
+      };
+      fetchCart();
+    }
+  }, [user]);
+
+  const updateQuantity = async (productId: string, newQuantity: number) => {
+    if (newQuantity < 1) return;
+
+    const updatedItems = cartItems.map((item) =>
+      item.productId === productId ? { ...item, quantity: newQuantity } : item
+    );
+    setCartItems(updatedItems);
+
+    if (user) {
+      const cartRef = doc(db, "carts", user.uid);
+      await updateDoc(cartRef, { items: updatedItems });
+    }
+  };
+
+  const removeItem = async (productId: string) => {
+    const updatedItems = cartItems.filter((item) => item.productId !== productId);
+    setCartItems(updatedItems);
+
+    if (user) {
+      const cartRef = doc(db, "carts", user.uid);
+      await updateDoc(cartRef, { items: arrayRemove(...cartItems.filter((item) => item.productId === productId)) });
+    }
+
+    toast.success("Item removed", { description: "Item has been removed from your cart." });
+  };
+
+  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+  const shipping = 5.99;
+  const total = subtotal + shipping;
+
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Hero Section */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-green-50">
-        <div className="container px-4 md:px-6">
-          <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
-            <div className="flex flex-col justify-center space-y-4">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
-                  Pure Organic Products for a Healthier Life
-                </h1>
-                <p className="max-w-[600px] text-gray-500 md:text-xl">
-                  Discover our range of certified organic products sourced directly from trusted farmers and producers.
-                </p>
-              </div>
-              <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                <Link href="/products">
-                  <Button size="lg" className="bg-green-600 hover:bg-green-700">
-                    Shop Now
-                  </Button>
-                </Link>
-                <Link href="/about">
-                  <Button size="lg" variant="outline">
-                    Learn More
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            <div className="relative h-[300px] lg:h-[400px] overflow-hidden rounded-xl">
-              <Image
-                src="/placeholder.svg?height=400&width=800"
-                alt="Organic products"
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+    <div className="container px-4 py-12 md:py-24">
+      <div className="flex flex-col items-center justify-center space-y-4 text-center mb-8">
+        <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">Your Cart</h1>
+        <p className="max-w-[600px] text-gray-500">Review your items and proceed to checkout</p>
+      </div>
 
-      {/* Featured Products */}
-      <section className="w-full py-12 md:py-24 lg:py-32">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <div className="space-y-2">
-              <div className="inline-block rounded-lg bg-green-100 px-3 py-1 text-sm text-green-700">
-                Featured Products
-              </div>
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Our Best Sellers</h2>
-              <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                Discover our most popular organic products loved by our customers.
-              </p>
-            </div>
-          </div>
-          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 sm:grid-cols-2 md:grid-cols-3 lg:gap-8">
-            {featuredProducts.map((product) => (
-              <Link
-                key={product.id}
-                href={`/products/${product.id}`}
-                className="group relative overflow-hidden rounded-lg"
-              >
-                <Card className="h-full transition-all hover:shadow-lg">
-                  <div className="relative h-60 overflow-hidden">
-                    <Image
-                      src={product.image || "/placeholder.svg"}
-                      alt={product.name}
-                      fill
-                      className="object-cover transition-transform group-hover:scale-105"
-                    />
-                    {product.badge && (
-                      <div className="absolute top-2 right-2 bg-green-600 text-white text-xs font-medium px-2 py-1 rounded">
-                        {product.badge}
+      {cartItems.length === 0 ? (
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold mb-4">Your cart is empty</h2>
+          <p className="text-gray-500 mb-8">Looks like you haven't added any products to your cart yet.</p>
+          <Link href="/products">
+            <Button className="bg-green-600 hover:bg-green-700">Continue Shopping</Button>
+          </Link>
+        </div>
+      ) : (
+        <div className="grid gap-8 md:grid-cols-3">
+          <div className="md:col-span-2 space-y-4">
+            {cartItems.map((item, index) => (
+              <Card key={`${item.productId}-${index}`} className="overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="flex flex-col sm:flex-row">
+                    <div className="relative h-40 w-full sm:h-auto sm:w-40">
+                      <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
+                    </div>
+                    <div className="flex flex-1 flex-col p-4">
+                      <div className="flex justify-between">
+                        <h3 className="font-semibold text-lg">{item.name}</h3>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground"
+                          onClick={() => removeItem(item.productId)}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
                       </div>
-                    )}
-                  </div>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-lg">{product.name}</h3>
-                      <div className="flex items-center">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="ml-1 text-sm text-gray-600">{product.rating}</span>
+                      <p className="text-sm text-gray-500 mb-4">{item.description}</p>
+                      <div className="mt-auto flex items-center justify-between">
+                        <div className="flex items-center border rounded-md">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-none"
+                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <span className="w-8 text-center">{item.quantity}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-none"
+                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <div className="font-bold">${(item.price * item.quantity).toFixed(2)}</div>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-500 mt-2">{product.description}</p>
-                    <div className="flex items-center justify-between mt-4">
-                      <span className="font-bold">${product.price.toFixed(2)}</span>
-                      <Button size="sm" variant="outline" className="rounded-full">
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        Add to Cart
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-          <div className="flex justify-center">
-            <Link href="/products">
-              <Button variant="outline" size="lg">
-                View All Products
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-green-50">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Why Choose Us</h2>
-              <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                We're committed to providing the highest quality organic products.
-              </p>
-            </div>
-          </div>
-          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 md:grid-cols-3">
-            {features.map((feature, index) => (
-              <Card key={index} className="bg-white">
-                <CardContent className="p-6 flex flex-col items-center text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-4">
-                    <Leaf className="h-6 w-6 text-green-600" />
                   </div>
-                  <h3 className="text-xl font-bold">{feature.title}</h3>
-                  <p className="text-gray-500 mt-2">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
+
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Summary</CardTitle>
+                <CardDescription>Review your order details</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>${subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Shipping</span>
+                  <span>${shipping.toFixed(2)}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between font-bold">
+                  <span>Total</span>
+                  <span>${total.toFixed(2)}</span>
+                </div>
+                <div className="pt-4">
+                  <div className="mb-4">
+                    <Input placeholder="Promo code" />
+                  </div>
+                  <Button className="w-full bg-green-600 hover:bg-green-700">Proceed to Checkout</Button>
+                </div>
+              </CardContent>
+              <CardFooter className="text-sm text-gray-500">
+                <p>Secure checkout powered by Stripe</p>
+              </CardFooter>
+            </Card>
+          </div>
         </div>
-      </section>
+      )}
     </div>
-  )
+  );
 }
-
-const featuredProducts = [
-  {
-    id: 1,
-    name: "Organic Avocados",
-    description: "Fresh, ripe avocados grown without pesticides",
-    price: 4.99,
-    image: "/placeholder.svg?height=300&width=300",
-    rating: 4.8,
-    badge: "Best Seller",
-  },
-  {
-    id: 2,
-    name: "Raw Honey",
-    description: "Pure, unfiltered honey from organic beekeepers",
-    price: 8.99,
-    image: "/placeholder.svg?height=300&width=300",
-    rating: 4.9,
-  },
-  {
-    id: 3,
-    name: "Organic Quinoa",
-    description: "Protein-rich ancient grain, sustainably farmed",
-    price: 6.49,
-    image: "/placeholder.svg?height=300&width=300",
-    rating: 4.7,
-  },
-]
-
-const features = [
-  {
-    title: "100% Certified Organic",
-    description: "All our products are certified organic, ensuring they meet the highest standards.",
-  },
-  {
-    title: "Direct from Farmers",
-    description: "We source directly from organic farmers, ensuring fair prices and fresh products.",
-  },
-  {
-    title: "Eco-Friendly Packaging",
-    description: "Our packaging is biodegradable and made from recycled materials.",
-  },
-]
-

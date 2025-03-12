@@ -1,30 +1,36 @@
+//app/login/page.tsx
 "use client"
 
 import React, { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { signInWithEmailAndPassword } from "firebase/auth"
+import { auth } from "@/lib/firebase" // Ensure firebase is properly configured
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { toast } from "sonner" // Replaced useToast
+import { toast } from "sonner"
 
 export default function LoginPage() {
   const router = useRouter()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false)
-      toast("Login successful", {
-        description: "Welcome back to OrganicMarket!",
-      })
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
+      toast.success("Login successful", { description: "Welcome back to OrganicMarket!" })
       router.push("/")
-    }, 1500)
+    } catch (error: any) {
+      toast.error("Login failed", { description: error.message })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -39,7 +45,7 @@ export default function LoginPage() {
             <div className="grid gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="m@example.com" required />
+                <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
@@ -48,7 +54,7 @@ export default function LoginPage() {
                     Forgot password?
                   </Link>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
               <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={isLoading}>
                 {isLoading ? "Logging in..." : "Login"}

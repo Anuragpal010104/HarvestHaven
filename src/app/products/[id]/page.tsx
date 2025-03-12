@@ -1,34 +1,173 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-// import { useToast } from "@/hooks/use-toast"
-import { ChevronLeft, Minus, Plus, ShoppingCart, Star } from "lucide-react"
+import { useState } from "react";
+import { use } from "react"; // Import `use` to unwrap the params Promise
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { ChevronLeft, Minus, Plus, ShoppingCart, Star } from "lucide-react";
+import { auth, db } from "@/lib/firebase";
+import { doc, setDoc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { useAuthState } from "react-firebase-hooks/auth";
 
-interface Params {
+interface Product {
   id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  rating: number;
+  reviews: number;
+  badge?: string;
 }
 
-export default function ProductPage({ params }: { params: Params }) {
-//   const { toast } = useToast()
-  const productId = Number.parseInt(params.id)
-  const product = products.find((p) => p.id === productId) || products[0]
+const products: Product[] = [
+  {
+    id: "1",
+    name: "Organic Avocados",
+    description: "Fresh, ripe avocados grown without pesticides",
+    price: 4.99,
+    image: "/placeholder.svg?height=400&width=400",
+    rating: 4.8,
+    reviews: 124,
+    badge: "Best Seller",
+  },
+  {
+    id: "2",
+    name: "Raw Honey",
+    description: "Pure, unfiltered honey from organic beekeepers",
+    price: 8.99,
+    image: "/placeholder.svg?height=400&width=400",
+    rating: 4.9,
+    reviews: 89,
+  },
+  {
+    id: "3",
+    name: "Organic Quinoa",
+    description: "Protein-rich ancient grain, sustainably farmed",
+    price: 6.49,
+    image: "/placeholder.svg?height=400&width=400",
+    rating: 4.7,
+    reviews: 56,
+  },
+  {
+    id: "4",
+    name: "Almond Milk",
+    description: "Creamy plant-based milk alternative",
+    price: 3.99,
+    image: "/placeholder.svg?height=400&width=400",
+    rating: 4.5,
+    reviews: 42,
+  },
+];
 
-  const [quantity, setQuantity] = useState(1)
+export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params); // Unwrap the params Promise
+  const [user] = useAuthState(auth);
+  const productId = id; // Use the unwrapped `id`
+  const product = products.find((p) => p.id === productId) || products[0];
 
-  const increaseQuantity = () => setQuantity((prev) => prev + 1)
-  const decreaseQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1))
+  const [quantity, setQuantity] = useState(1);
 
-  const addToCart = () => {
-    // toast({
-    //   title: "Added to cart",
-    //   description: `${quantity} × ${product.name} added to your cart.`,
-    // })
-  }
+  const increaseQuantity = () => setQuantity((prev) => prev + 1);
+  const decreaseQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+  // const addToCart = async () => {
+  //   if (!user) {
+  //     toast.error("Please log in", { description: "You need to be logged in to add items to your cart." });
+  //     return;
+  //   }
+
+  //   try {
+  //     const cartRef = doc(db, "carts", user.uid);
+  //     const cartSnap = await getDoc(cartRef);
+
+  //     const cartItem = {
+  //       productId: product.id,
+  //       name: product.name,
+  //       price: product.price,
+  //       quantity,
+  //       image: product.image,
+  //     };
+
+  //     if (cartSnap.exists()) {
+  //       // Update existing cart
+  //       await updateDoc(cartRef, {
+  //         items: arrayUnion(cartItem),
+  //       });
+  //     } else {
+  //       // Create new cart
+  //       await setDoc(cartRef, {
+  //         userId: user.uid,
+  //         items: [cartItem],
+  //       });
+  //     }
+
+  //     toast.success("Added to cart", {
+  //       description: `${quantity} × ${product.name} added to your cart.`,
+  //     });
+  //   } catch (error: any) {
+  //     console.error("Error adding to cart:", error);
+  //     toast.error("Failed to add to cart", { description: error.message || "Something went wrong." });
+  //   }
+  // };
+
+  const addToCart = async () => {
+    if (!user) {
+      toast.error("Please log in", {
+        description: "You need to be logged in to add items to your cart.",
+      });
+      return;
+    }
+  
+    try {
+      const cartRef = doc(db, "carts", user.uid);
+      const cartSnap = await getDoc(cartRef);
+  
+      const cartItem = {
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        quantity,
+        image: product.image,
+      };
+  
+      if (cartSnap.exists()) {
+        const existingItems = cartSnap.data().items || [];
+        const existingItemIndex = existingItems.findIndex(
+          (item: any) => item.productId === cartItem.productId
+        );
+  
+        if (existingItemIndex >= 0) {
+          // Update quantity of existing item
+          const updatedItems = [...existingItems];
+          updatedItems[existingItemIndex].quantity += quantity;
+          await updateDoc(cartRef, { items: updatedItems });
+        } else {
+          // Add new item
+          await updateDoc(cartRef, { items: [...existingItems, cartItem] });
+        }
+      } else {
+        // Create new cart
+        await setDoc(cartRef, {
+          userId: user.uid,
+          items: [cartItem],
+        });
+      }
+  
+      toast.success("Added to cart", {
+        description: `${quantity} × ${product.name} added to your cart.`,
+      });
+    } catch (error: any) {
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to add to cart", {
+        description: error.message || "Something went wrong.",
+      });
+    }
+  };
 
   return (
     <div className="container px-4 py-12 md:py-24">
@@ -42,7 +181,7 @@ export default function ProductPage({ params }: { params: Params }) {
 
       <div className="grid gap-8 md:grid-cols-2">
         <div className="relative aspect-square overflow-hidden rounded-lg">
-          <Image src={product.image || "/placeholder.svg"} alt={product.name} fill className="object-cover" priority />
+          <Image src={product.image} alt={product.name} fill className="object-cover" priority />
         </div>
 
         <div className="space-y-6">
@@ -101,6 +240,7 @@ export default function ProductPage({ params }: { params: Params }) {
         </div>
       </div>
 
+      {/* Tabs for Description, Details, and Reviews */}
       <div className="mt-16">
         <Tabs defaultValue="description">
           <TabsList className="w-full justify-start">
@@ -167,6 +307,7 @@ export default function ProductPage({ params }: { params: Params }) {
         </Tabs>
       </div>
 
+      {/* Related Products Section */}
       <div className="mt-16">
         <h2 className="text-2xl font-bold mb-8">You might also like</h2>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -179,7 +320,7 @@ export default function ProductPage({ params }: { params: Params }) {
               <Card className="h-full transition-all hover:shadow-lg">
                 <div className="relative h-48 overflow-hidden">
                   <Image
-                    src={product.image || "/placeholder.svg"}
+                    src={product.image}
                     alt={product.name}
                     fill
                     className="object-cover transition-transform group-hover:scale-105"
@@ -201,52 +342,12 @@ export default function ProductPage({ params }: { params: Params }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
-
-const products = [
-  {
-    id: 1,
-    name: "Organic Avocados",
-    description: "Fresh, ripe avocados grown without pesticides",
-    price: 4.99,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.8,
-    reviews: 124,
-    badge: "Best Seller",
-  },
-  {
-    id: 2,
-    name: "Raw Honey",
-    description: "Pure, unfiltered honey from organic beekeepers",
-    price: 8.99,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.9,
-    reviews: 89,
-  },
-  {
-    id: 3,
-    name: "Organic Quinoa",
-    description: "Protein-rich ancient grain, sustainably farmed",
-    price: 6.49,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.7,
-    reviews: 56,
-  },
-  {
-    id: 4,
-    name: "Almond Milk",
-    description: "Creamy plant-based milk alternative",
-    price: 3.99,
-    image: "/placeholder.svg?height=400&width=400",
-    rating: 4.5,
-    reviews: 42,
-  },
-]
 
 const relatedProducts = [
   {
-    id: 5,
+    id: "5",
     name: "Organic Kale",
     description: "Fresh, nutrient-dense leafy greens",
     price: 2.99,
@@ -254,7 +355,7 @@ const relatedProducts = [
     rating: 4.6,
   },
   {
-    id: 6,
+    id: "6",
     name: "Coconut Oil",
     description: "Cold-pressed, unrefined coconut oil",
     price: 9.99,
@@ -262,7 +363,7 @@ const relatedProducts = [
     rating: 4.8,
   },
   {
-    id: 7,
+    id: "7",
     name: "Organic Blueberries",
     description: "Sweet, antioxidant-rich berries",
     price: 5.99,
@@ -270,14 +371,14 @@ const relatedProducts = [
     rating: 4.9,
   },
   {
-    id: 8,
+    id: "8",
     name: "Chia Seeds",
     description: "Nutrient-packed superfood seeds",
     price: 7.49,
     image: "/placeholder.svg?height=200&width=200",
     rating: 4.7,
   },
-]
+];
 
 const reviews = [
   {
@@ -300,5 +401,4 @@ const reviews = [
     date: "2 weeks ago",
     comment: "Love that these are truly organic and pesticide-free. You can taste the difference! Fast shipping too.",
   },
-]
-
+];

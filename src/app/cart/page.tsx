@@ -35,7 +35,7 @@ export default function Home() {
             </div>
             <div className="relative h-[300px] lg:h-[400px] overflow-hidden rounded-xl">
               <Image
-                src="https://images.pexels.com/photos/767240/pexels-photo-767240.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                src="/placeholder.svg?height=400&width=800"
                 alt="Organic products"
                 fill
                 className="object-cover"
@@ -148,7 +148,7 @@ const featuredProducts = [
     name: "Organic Avocados",
     description: "Fresh, ripe avocados grown without pesticides",
     price: 4.99,
-    image: "https://images.pexels.com/photos/5454020/pexels-photo-5454020.jpeg?auto=compress&cs=tinysrgb&w=600",
+    image: "/placeholder.svg?height=300&width=300",
     rating: 4.8,
     badge: "Best Seller",
   },
@@ -157,7 +157,7 @@ const featuredProducts = [
     name: "Raw Honey",
     description: "Pure, unfiltered honey from organic beekeepers",
     price: 8.99,
-    image: "https://images.pexels.com/photos/7990484/pexels-photo-7990484.jpeg?auto=compress&cs=tinysrgb&w=600",
+    image: "/placeholder.svg?height=300&width=300",
     rating: 4.9,
   },
   {
@@ -165,7 +165,7 @@ const featuredProducts = [
     name: "Organic Quinoa",
     description: "Protein-rich ancient grain, sustainably farmed",
     price: 6.49,
-    image: "https://images.pexels.com/photos/1640767/pexels-photo-1640767.jpeg?auto=compress&cs=tinysrgb&w=600",
+    image: "/placeholder.svg?height=300&width=300",
     rating: 4.7,
   },
 ]

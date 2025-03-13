@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -9,16 +10,29 @@ import { auth, db } from "@/lib/firebase";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { toast } from "sonner";
+import { getAllProducts, Product } from "@/lib/db";
 
 export default function ProductsPage() {
   const [user] = useAuthState(auth);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addToCart = async (product: {
-    id: number;
-    name: string;
-    price: number;
-    image?: string;
-  }) => {
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const fetchedProducts = await getAllProducts();
+        setProducts(fetchedProducts);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        toast.error("Failed to load products");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const addToCart = async (product: Product) => {
     if (!user) {
       toast.error("Please log in", {
         description: "You need to be logged in to add items to your cart.",
@@ -31,11 +45,11 @@ export default function ProductsPage() {
       const cartSnap = await getDoc(cartRef);
 
       const cartItem = {
-        productId: product.id.toString(),
-        name: product.name,
+        productId: product.id,
+        name: product.title,
         price: product.price,
         quantity: 1,
-        image: product.image || "/placeholder.svg",
+        image: product.imageBase64 || "/placeholder.svg",
       };
 
       if (cartSnap.exists()) {
@@ -45,16 +59,13 @@ export default function ProductsPage() {
         );
 
         if (existingItemIndex >= 0) {
-          // Update quantity of existing item
           const updatedItems = [...existingItems];
           updatedItems[existingItemIndex].quantity += 1;
           await updateDoc(cartRef, { items: updatedItems });
         } else {
-          // Add new item
           await updateDoc(cartRef, { items: [...existingItems, cartItem] });
         }
       } else {
-        // Create new cart
         await setDoc(cartRef, {
           userId: user.uid,
           items: [cartItem],
@@ -62,7 +73,7 @@ export default function ProductsPage() {
       }
 
       toast.success("Added to cart", {
-        description: `1 × ${product.name} added to your cart.`,
+        description: `1 × ${product.title} added to your cart.`,
       });
     } catch (error: any) {
       console.error("Error adding to cart:", error);
@@ -71,6 +82,10 @@ export default function ProductsPage() {
       });
     }
   };
+
+  if (loading) {
+    return <div className="container px-4 py-12 text-center">Loading products...</div>;
+  }
 
   return (
     <div className="container px-4 py-12 md:py-24">
@@ -86,38 +101,26 @@ export default function ProductsPage() {
       </div>
       <div className="grid grid-cols-1 gap-6 py-12 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {products.map((product) => (
-          <Card
-            key={product.id}
-            className="h-full transition-all hover:shadow-lg"
-          >
+          <Card key={product.id} className="h-full transition-all hover:shadow-lg">
             <Link href={`/products/${product.id}`} className="block">
               <div className="relative h-60 overflow-hidden">
                 <Image
-                  src={product.image || "/placeholder.svg"}
-                  alt={product.name}
+                  src={product.imageBase64 || "/placeholder.svg"}
+                  alt={product.title}
                   fill
                   className="object-cover transition-transform group-hover:scale-105"
                 />
-                {product.badge && (
-                  <div className="absolute top-2 right-2 bg-green-600 text-white text-xs font-medium px-2 py-1 rounded">
-                    {product.badge}
-                  </div>
-                )}
               </div>
             </Link>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-lg">{product.name}</h3>
+                <h3 className="font-semibold text-lg">{product.title}</h3>
                 <div className="flex items-center">
                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span className="ml-1 text-sm text-gray-600">
-                    {product.rating}
-                  </span>
+                  <span className="ml-1 text-sm text-gray-600">4.5</span> {/* Static rating for now */}
                 </div>
               </div>
-              <p className="text-sm text-gray-500 mt-2">
-                {product.description}
-              </p>
+              <p className="text-sm text-gray-500 mt-2">{product.description}</p>
               <div className="flex items-center justify-between mt-4">
                 <span className="font-bold">${product.price.toFixed(2)}</span>
                 <Button
@@ -140,72 +143,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-
-const products = [
-  {
-    id: 1,
-    name: "Organic Avocados",
-    description: "Fresh, ripe avocados grown without pesticides",
-    price: 4.99,
-    image: "/placeholder.svg?height=300&width=300",
-    rating: 4.8,
-    badge: "Best Seller",
-  },
-  {
-    id: 2,
-    name: "Raw Honey",
-    description: "Pure, unfiltered honey from organic beekeepers",
-    price: 8.99,
-    image: "/placeholder.svg?height=300&width=300",
-    rating: 4.9,
-  },
-  {
-    id: 3,
-    name: "Organic Quinoa",
-    description: "Protein-rich ancient grain, sustainably farmed",
-    price: 6.49,
-    image: "/placeholder.svg?height=300&width=300",
-    rating: 4.7,
-  },
-  {
-    id: 4,
-    name: "Almond Milk",
-    description: "Creamy plant-based milk alternative",
-    price: 3.99,
-    image: "/placeholder.svg?height=300&width=300",
-    rating: 4.5,
-  },
-  {
-    id: 5,
-    name: "Organic Kale",
-    description: "Fresh, nutrient-dense leafy greens",
-    price: 2.99,
-    image: "/placeholder.svg?height=300&width=300",
-    rating: 4.6,
-  },
-  {
-    id: 6,
-    name: "Coconut Oil",
-    description: "Cold-pressed, unrefined coconut oil",
-    price: 9.99,
-    image: "/placeholder.svg?height=300&width=300",
-    rating: 4.8,
-  },
-  {
-    id: 7,
-    name: "Organic Blueberries",
-    description: "Sweet, antioxidant-rich berries",
-    price: 5.99,
-    image: "/placeholder.svg?height=300&width=300",
-    rating: 4.9,
-    badge: "New",
-  },
-  {
-    id: 8,
-    name: "Chia Seeds",
-    description: "Nutrient-packed superfood seeds",
-    price: 7.49,
-    image: "/placeholder.svg?height=300&width=300",
-    rating: 4.7,
-  },
-];

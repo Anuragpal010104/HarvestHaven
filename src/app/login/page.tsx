@@ -25,7 +25,7 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password)
       toast.success("Login successful", { description: "Welcome back to OrganicMarket!" })
-      router.push("/")
+      router.push("/dashboard")
     } catch (error: any) {
       toast.error("Login failed", { description: error.message })
     } finally {

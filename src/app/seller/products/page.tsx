@@ -1,81 +1,124 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-// import { useToast } from "@/hooks/use-toast"
-import { Edit, Plus, Trash } from "lucide-react"
-import { SellerLayout } from "@/app/seller/seller-layout"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
+import { Edit, Plus, Trash } from "lucide-react";
+import { SellerLayout } from "@/app/seller/seller-layout";
+import { addProduct, getProductsBySeller, deleteProduct, Product } from "@/lib/db";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function SellerProducts() {
-//   const { toast } = useToast()
-  const [products, setProducts] = useState(initialProducts)
-  const [isAddProductOpen, setIsAddProductOpen] = useState(false)
+  const router = useRouter();
+  const [seller, setSeller] = useState<any>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [newProduct, setNewProduct] = useState({
-    name: "",
+    title: "",
     description: "",
     price: "",
     category: "",
     stock: "",
-    image: "/placeholder.svg?height=200&width=200",
-  })
+    image: null as File | null,
+  });
 
-  const handleAddProduct = () => {
-    const productToAdd = {
-      ...newProduct,
-      id: (products.length + 1).toString(),
-      price: Number.parseFloat(newProduct.price),
-      stock: Number.parseInt(newProduct.stock),
+  // Define available categories
+  const categories = [
+    "Fruits & Vegetables",
+    "Dairy & Eggs",
+    "Pantry Items",
+    "Other",
+  ];
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          setSeller(user);
+          const sellerProducts = await getProductsBySeller(user.uid);
+          setProducts(sellerProducts);
+        } catch (error) {
+          console.error("Error loading products:", error);
+          router.push("/login");
+        }
+      } else {
+        setSeller(null);
+        router.push("/login");
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
+
+  const handleAddProduct = async () => {
+    if (!seller) {
+      alert("You must be logged in to add a product.");
+      return;
     }
 
-    setProducts([...products, productToAdd])
-    setNewProduct({
-      name: "",
-      description: "",
-      price: "",
-      category: "",
-      stock: "",
-      image: "/placeholder.svg?height=200&width=200",
-    })
-    setIsAddProductOpen(false)
+    setLoading(true);
+    try {
+      const productToAdd = {
+        sellerId: seller.uid,
+        title: newProduct.title,
+        description: newProduct.description,
+        price: Number.parseFloat(newProduct.price),
+        stock: Number.parseInt(newProduct.stock),
+        category: newProduct.category,
+      };
 
-    // toast({
-    //   title: "Product added",
-    //   description: "Your product has been added successfully.",
-    // })
-  }
+      const newProductId = await addProduct(productToAdd, newProduct.image || undefined);
+      
+      const updatedProducts = await getProductsBySeller(seller.uid);
+      setProducts(updatedProducts);
+      
+      setNewProduct({ 
+        title: "", 
+        description: "", 
+        price: "", 
+        category: "", 
+        stock: "", 
+        image: null 
+      });
+      setIsAddProductOpen(false);
+      alert("Product added successfully!");
+    } catch (error) {
+      console.error("Error adding product:", error);
+      alert(`Failed to add product: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleDeleteProduct = (id: string) => {
-    setProducts(products.filter((product) => product.id !== id))
-
-    // toast({
-    //   title: "Product deleted",
-    //   description: "Your product has been deleted successfully.",
-    // })
-  }
+  const handleDeleteProduct = async (productId: string) => {
+    setLoading(true);
+    try {
+      await deleteProduct(productId);
+      setProducts(products.filter((product) => product.id !== productId));
+      alert("Product deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      alert("Failed to delete product.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SellerLayout>
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold tracking-tight">Products</h2>
+      <div className="p-4 md:p-8 pt-6">
+        <div className="flex justify-between">
+          <h2 className="text-3xl font-bold">Products</h2>
           <Dialog open={isAddProductOpen} onOpenChange={setIsAddProductOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button disabled={loading}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Product
               </Button>
@@ -83,106 +126,116 @@ export default function SellerProducts() {
             <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
                 <DialogTitle>Add New Product</DialogTitle>
-                <DialogDescription>Fill in the details to add a new organic product to your store.</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Product Name</Label>
-                  <Input
-                    id="name"
-                    value={newProduct.name}
-                    onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                    placeholder="Organic Avocados"
+                <div>
+                  <Label htmlFor="title">Product Name</Label>
+                  <Input 
+                    id="title" 
+                    value={newProduct.title} 
+                    onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })} 
                   />
                 </div>
-                <div className="grid gap-2">
+
+                <div>
                   <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={newProduct.description}
-                    onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                    placeholder="Fresh, ripe avocados grown without pesticides"
+                  <Textarea 
+                    id="description" 
+                    value={newProduct.description} 
+                    onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} 
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="price">Price ($)</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      step="0.01"
-                      value={newProduct.price}
-                      onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                      placeholder="4.99"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="stock">Stock</Label>
-                    <Input
-                      id="stock"
-                      type="number"
-                      value={newProduct.stock}
-                      onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
-                      placeholder="100"
-                    />
-                  </div>
+
+                <div>
+                  <Label htmlFor="price">Price ($)</Label>
+                  <Input 
+                    id="price" 
+                    type="number" 
+                    value={newProduct.price} 
+                    onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} 
+                  />
                 </div>
-                <div className="grid gap-2">
+
+                <div>
+                  <Label htmlFor="stock">Stock</Label>
+                  <Input 
+                    id="stock" 
+                    type="number" 
+                    value={newProduct.stock} 
+                    onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })} 
+                  />
+                </div>
+
+                <div>
                   <Label htmlFor="category">Category</Label>
                   <Select
+                    value={newProduct.category}
                     onValueChange={(value) => setNewProduct({ ...newProduct, category: value })}
-                    defaultValue={newProduct.category}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="category">
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="fruits">Fruits & Vegetables</SelectItem>
-                      <SelectItem value="dairy">Dairy & Eggs</SelectItem>
-                      <SelectItem value="pantry">Pantry Items</SelectItem>
-                      <SelectItem value="bakery">Bakery</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category.toLowerCase()}>
+                          {category}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div>
+                  <Label htmlFor="image">Product Image (max 1MB)</Label>
+                  <Input 
+                    id="image" 
+                    type="file" 
+                    accept="image/*"
+                    onChange={(e) => setNewProduct({ ...newProduct, image: e.target.files?.[0] || null })} 
+                  />
+                </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsAddProductOpen(false)}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsAddProductOpen(false)}
+                  disabled={loading}
+                >
                   Cancel
                 </Button>
-                <Button onClick={handleAddProduct}>Add Product</Button>
+                <Button 
+                  onClick={handleAddProduct}
+                  disabled={loading}
+                >
+                  {loading ? "Adding..." : "Add Product"}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 mt-4 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
-            <Card key={product.id} className="overflow-hidden">
-              <div className="relative h-48">
-                <Image src={product.image || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
-              </div>
+            <Card key={product.id}>
               <CardHeader>
-                <CardTitle>{product.name}</CardTitle>
+                <CardTitle>{product.title}</CardTitle>
                 <CardDescription>{product.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium">Price</p>
-                    <p className="text-xl font-bold">${product.price.toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Stock</p>
-                    <p className="text-xl font-bold">{product.stock}</p>
-                  </div>
-                </div>
+                {product.imageBase64 && (
+                  <img 
+                    src={product.imageBase64} 
+                    alt={product.title} 
+                    className="max-w-full h-auto"
+                  />
+                )}
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="outline" size="icon">
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button variant="destructive" size="icon" onClick={() => handleDeleteProduct(product.id)}>
-                  <Trash className="h-4 w-4" />
+              <CardFooter>
+                <Button 
+                  onClick={() => handleDeleteProduct(product.id)} 
+                  variant="destructive"
+                  disabled={loading}
+                >
+                  <Trash />
                 </Button>
               </CardFooter>
             </Card>
@@ -190,36 +243,5 @@ export default function SellerProducts() {
         </div>
       </div>
     </SellerLayout>
-  )
+  );
 }
-
-const initialProducts = [
-  {
-    id: "1",
-    name: "Organic Avocados",
-    description: "Fresh, ripe avocados grown without pesticides",
-    price: 4.99,
-    stock: 50,
-    category: "fruits",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "2",
-    name: "Raw Honey",
-    description: "Pure, unfiltered honey from organic beekeepers",
-    price: 8.99,
-    stock: 30,
-    category: "pantry",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-  {
-    id: "3",
-    name: "Organic Quinoa",
-    description: "Protein-rich ancient grain, sustainably farmed",
-    price: 6.49,
-    stock: 45,
-    category: "pantry",
-    image: "/placeholder.svg?height=200&width=200",
-  },
-]
-

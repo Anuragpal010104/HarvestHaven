@@ -1,12 +1,24 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Heart, Home, Leaf, LogOut, MapPin, Settings, ShoppingBag, User } from "lucide-react"
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation"; // Add useRouter
+import { Button } from "@/components/ui/button";
+import { Heart, Home, Leaf, LogOut, MapPin, Settings, ShoppingBag, User } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext"; // Adjust the path to your AuthContext file
 
 export function UserLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
+  const pathname = usePathname();
+  const router = useRouter(); // Initialize useRouter
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout(); // Call the logout function from useAuth
+      router.push("/login"); // Redirect to login page after logout
+    } catch (error) {
+      console.error("Logout failed:", error); // Optional: Handle logout errors
+    }
+  };
 
   const routes = [
     {
@@ -39,7 +51,7 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
       label: "Settings",
       icon: <Settings className="h-5 w-5" />,
     },
-  ]
+  ];
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -56,7 +68,7 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
                 Home
               </Link>
             </Button>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="h-5 w-5 mr-2" />
               Logout
             </Button>
@@ -83,6 +95,5 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
         <div className="flex-1">{children}</div>
       </div>
     </div>
-  )
+  );
 }
-

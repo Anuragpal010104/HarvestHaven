@@ -13,11 +13,14 @@ export const metadata = {
 }
 
 import { ReactNode } from "react";
+import { AuthProvider } from "@/lib/AuthContext"
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className={inter.className}>
+        <AuthProvider>
+          
         {/* <ThemeProvider attribute="class" defaultTheme="light"> */}
           <div className="relative flex min-h-screen flex-col">
             <SiteHeader />
@@ -26,6 +29,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </div>
           {/* <Toaster /> */}
         {/* </ThemeProvider> */}
+        </AuthProvider>
       </body>
     </html>
   )

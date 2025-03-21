@@ -24,8 +24,19 @@ interface ProductBase {
 }
 
 // Define Product interface with id for use after retrieval
-export interface Product extends ProductBase {
+// export interface Product extends ProductBase {
+//   id: string;
+// }
+export interface Product {
   id: string;
+  title: string;
+  description: string;
+  category: string;
+  price: number;
+  stock: number;
+  sellerId: string;
+  createdAt: string;
+  imageBase64?: string;
 }
 
 // Add a new product
@@ -43,7 +54,7 @@ export const addProduct = async (
         reader.readAsDataURL(imageFile);
       });
       
-      if (imageBase64.length > 900000) { // Rough check for 1MB limit
+      if (imageBase64.length > 1000000) { // Rough check for 1MB limit
         throw new Error("Image size too large. Please upload an image smaller than 1MB.");
       }
     }

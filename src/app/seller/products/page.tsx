@@ -8,16 +8,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit, Plus, Trash } from "lucide-react";
 import { SellerLayout } from "@/app/seller/seller-layout";
 import { addProduct, getProductsBySeller, deleteProduct, Product } from "@/lib/db";
-import { auth } from "@/lib/firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function SellerProducts() {
   const router = useRouter();
-  const [seller, setSeller] = useState<any>(null);
+  const { user, loading: authLoading } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,7 +29,6 @@ export default function SellerProducts() {
     image: null as File | null,
   });
 
-  // Define available categories
   const categories = [
     "Fruits & Vegetables",
     "Dairy & Eggs",
@@ -39,26 +37,21 @@ export default function SellerProducts() {
   ];
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
+    if (!authLoading && user) {
+      const fetchProducts = async () => {
         try {
-          setSeller(user);
           const sellerProducts = await getProductsBySeller(user.uid);
           setProducts(sellerProducts);
         } catch (error) {
           console.error("Error loading products:", error);
-          router.push("/login");
         }
-      } else {
-        setSeller(null);
-        router.push("/login");
-      }
-    });
-    return () => unsubscribe();
-  }, [router]);
+      };
+      fetchProducts();
+    }
+  }, [user, authLoading]);
 
   const handleAddProduct = async () => {
-    if (!seller) {
+    if (!user) {
       alert("You must be logged in to add a product.");
       return;
     }
@@ -66,7 +59,7 @@ export default function SellerProducts() {
     setLoading(true);
     try {
       const productToAdd = {
-        sellerId: seller.uid,
+        sellerId: user.uid,
         title: newProduct.title,
         description: newProduct.description,
         price: Number.parseFloat(newProduct.price),
@@ -76,7 +69,7 @@ export default function SellerProducts() {
 
       const newProductId = await addProduct(productToAdd, newProduct.image || undefined);
       
-      const updatedProducts = await getProductsBySeller(seller.uid);
+      const updatedProducts = await getProductsBySeller(user.uid);
       setProducts(updatedProducts);
       
       setNewProduct({ 
@@ -111,6 +104,14 @@ export default function SellerProducts() {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString();
+  };
+
+  if (authLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <SellerLayout>
       <div className="p-4 md:p-8 pt-6">
@@ -136,7 +137,6 @@ export default function SellerProducts() {
                     onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })} 
                   />
                 </div>
-
                 <div>
                   <Label htmlFor="description">Description</Label>
                   <Textarea 
@@ -145,7 +145,6 @@ export default function SellerProducts() {
                     onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })} 
                   />
                 </div>
-
                 <div>
                   <Label htmlFor="price">Price ($)</Label>
                   <Input 
@@ -155,7 +154,6 @@ export default function SellerProducts() {
                     onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} 
                   />
                 </div>
-
                 <div>
                   <Label htmlFor="stock">Stock</Label>
                   <Input 
@@ -165,7 +163,6 @@ export default function SellerProducts() {
                     onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })} 
                   />
                 </div>
-
                 <div>
                   <Label htmlFor="category">Category</Label>
                   <Select
@@ -184,7 +181,6 @@ export default function SellerProducts() {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div>
                   <Label htmlFor="image">Product Image (max 1MB)</Label>
                   <Input 
@@ -225,9 +221,14 @@ export default function SellerProducts() {
                   <img 
                     src={product.imageBase64} 
                     alt={product.title} 
-                    className="max-w-full h-auto"
+                    className="w-full h-48 object-cover rounded-md mb-4"
                   />
                 )}
+                <div className="space-y-2">
+                  <p><strong>Category:</strong> {product.category}</p>
+                  <p><strong>Price:</strong> ${product.price.toFixed(2)}</p>
+                  <p><strong>Stock:</strong> {product.stock}</p>
+                </div>
               </CardContent>
               <CardFooter>
                 <Button 

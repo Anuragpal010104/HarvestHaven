@@ -1,14 +1,23 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { BarChart, Home, Leaf, LogOut, Package, Settings, ShoppingBag, Users } from "lucide-react"
-
-import { ReactNode } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { BarChart, Home, Leaf, LogOut, Package, Settings, ShoppingBag, Users } from "lucide-react";
+import { ReactNode, useEffect } from "react";
+import { useAuth } from "@/lib/AuthContext"; // Adjust the import path as needed
 
 export function SellerLayout({ children }: { children: ReactNode }) {
-  const pathname = usePathname()
+  const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout, loading } = useAuth();
+
+  // Handle redirect in useEffect to avoid updating during render
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/seller/login");
+    }
+  }, [loading, user, router]);
 
   const routes = [
     {
@@ -41,7 +50,26 @@ export function SellerLayout({ children }: { children: ReactNode }) {
       label: "Settings",
       icon: <Settings className="h-5 w-5" />,
     },
-  ]
+  ];
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // If user is not authenticated, return null (redirect will happen via useEffect)
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -52,7 +80,7 @@ export function SellerLayout({ children }: { children: ReactNode }) {
             <span>Seller Portal</span>
           </Link>
           <div className="ml-auto flex items-center space-x-4">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="h-5 w-5 mr-2" />
               Logout
             </Button>
@@ -79,6 +107,5 @@ export function SellerLayout({ children }: { children: ReactNode }) {
         <div className="flex-1">{children}</div>
       </div>
     </div>
-  )
+  );
 }
-

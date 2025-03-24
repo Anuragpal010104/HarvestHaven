@@ -12,6 +12,7 @@ import { Minus, Plus, Trash } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useRouter } from "next/navigation";
 
 interface CartItem {
   description: ReactNode;
@@ -25,6 +26,7 @@ interface CartItem {
 export default function CartPage() {
   const [user] = useAuthState(auth);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
@@ -68,6 +70,10 @@ export default function CartPage() {
   const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
   const shipping = 5.99;
   const total = subtotal + shipping;
+
+  const handleCheckout = () => {
+    router.push("/checkout"); // Redirect to /checkout.tsx
+  };
 
   return (
     <div className="container px-4 py-12 md:py-24">
@@ -160,7 +166,8 @@ export default function CartPage() {
                   <div className="mb-4">
                     <Input placeholder="Promo code" />
                   </div>
-                  <Button className="w-full bg-green-600 hover:bg-green-700">Proceed to Checkout</Button>
+                  <Button className="w-full bg-green-600 hover:bg-green-700"
+                  onClick={handleCheckout}>Proceed to Checkout</Button>
                 </div>
               </CardContent>
               <CardFooter className="text-sm text-gray-500">

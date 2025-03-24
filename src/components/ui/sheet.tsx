@@ -1,31 +1,30 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as SheetPrimitive from "@radix-ui/react-dialog"
-import { XIcon } from "lucide-react"
+import * as React from "react";
+import * as SheetPrimitive from "@radix-ui/react-dialog";
+import { XIcon } from "lucide-react";
+import { cva, type VariantProps } from "class-variance-authority"; // If you're using cva for variants
+import { cn } from "@/lib/utils";
 
-import { cn } from "@/lib/utils"
+// Optional: Add VisuallyHidden utility if you want to hide the title visually
+const VisuallyHidden = ({ children, ...props }: React.HTMLProps<HTMLSpanElement>) => (
+  <span className="sr-only" {...props}>{children}</span>
+);
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
-  return <SheetPrimitive.Root data-slot="sheet" {...props} />
+  return <SheetPrimitive.Root data-slot="sheet" {...props} />;
 }
 
-function SheetTrigger({
-  ...props
-}: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
-  return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />
+function SheetTrigger({ ...props }: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
+  return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />;
 }
 
-function SheetClose({
-  ...props
-}: React.ComponentProps<typeof SheetPrimitive.Close>) {
-  return <SheetPrimitive.Close data-slot="sheet-close" {...props} />
+function SheetClose({ ...props }: React.ComponentProps<typeof SheetPrimitive.Close>) {
+  return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
 }
 
-function SheetPortal({
-  ...props
-}: React.ComponentProps<typeof SheetPrimitive.Portal>) {
-  return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
+function SheetPortal({ ...props }: React.ComponentProps<typeof SheetPrimitive.Portal>) {
+  return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />;
 }
 
 function SheetOverlay({
@@ -41,16 +40,20 @@ function SheetOverlay({
       )}
       {...props}
     />
-  )
+  );
 }
 
 function SheetContent({
   className,
   children,
   side = "right",
+  title = "Sheet", // Default title prop
+  description, // Optional description prop
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
-  side?: "top" | "right" | "bottom" | "left"
+  side?: "top" | "right" | "bottom" | "left";
+  title?: string; // Add title prop
+  description?: string; // Add description prop
 }) {
   return (
     <SheetPortal>
@@ -71,6 +74,12 @@ function SheetContent({
         )}
         {...props}
       >
+        {/* Always include a title for accessibility */}
+        <SheetPrimitive.Title className="sr-only">{title}</SheetPrimitive.Title>
+        {/* Include description if provided */}
+        {description && (
+          <SheetPrimitive.Description className="sr-only">{description}</SheetPrimitive.Description>
+        )}
         {children}
         <SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
           <XIcon className="size-4" />
@@ -78,7 +87,7 @@ function SheetContent({
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>
     </SheetPortal>
-  )
+  );
 }
 
 function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
@@ -88,7 +97,7 @@ function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
       className={cn("flex flex-col gap-1.5 p-4", className)}
       {...props}
     />
-  )
+  );
 }
 
 function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
@@ -98,7 +107,7 @@ function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
       className={cn("mt-auto flex flex-col gap-2 p-4", className)}
       {...props}
     />
-  )
+  );
 }
 
 function SheetTitle({
@@ -111,7 +120,7 @@ function SheetTitle({
       className={cn("text-foreground font-semibold", className)}
       {...props}
     />
-  )
+  );
 }
 
 function SheetDescription({
@@ -124,7 +133,7 @@ function SheetDescription({
       className={cn("text-muted-foreground text-sm", className)}
       {...props}
     />
-  )
+  );
 }
 
 export {
@@ -136,4 +145,4 @@ export {
   SheetFooter,
   SheetTitle,
   SheetDescription,
-}
+};

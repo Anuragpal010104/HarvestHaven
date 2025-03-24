@@ -1,10 +1,9 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { ShoppingCart, User, Menu, Leaf } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ShoppingCart, User, Leaf } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,62 +11,28 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { useState } from "react"
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/lib/AuthContext";
 
 export function SiteHeader() {
-  const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(false)
+  const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   const routes = [
     { href: "/", label: "Home" },
     { href: "/products", label: "Products" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
-  ]
+  ];
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="pr-0">
-            <div className="px-7">
-              <Link href="/" className="flex items-center gap-2 text-lg font-bold" onClick={() => setIsOpen(false)}>
-                <Leaf className="h-6 w-6 text-green-600" />
-                <span>OrganicMarket</span>
-              </Link>
-            </div>
-            <nav className="flex flex-col gap-4 px-7 py-6">
-              {routes.map((route) => (
-                <Link
-                  key={route.href}
-                  href={route.href}
-                  className={`text-lg font-medium ${
-                    pathname === route.href ? "text-green-600" : "text-muted-foreground"
-                  }`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {route.label}
-                </Link>
-              ))}
-              <Link
-                href="/seller/login"
-                className="text-lg font-medium text-muted-foreground"
-                onClick={() => setIsOpen(false)}
-              >
-                Seller Portal
-              </Link>
-            </nav>
-          </SheetContent>
-        </Sheet>
-        <Link href="/" className="flex items-center gap-2 mr-6">
+      <div className="max-w-[1440px] mx-auto px-4 flex h-16 items-center">
+        <Link href="/" className="flex items-center gap-2 mr-4 sm:mr-6">
           <Leaf className="h-6 w-6 text-green-600" />
           <span className="hidden font-bold sm:inline-block">OrganicMarket</span>
         </Link>
@@ -97,14 +62,25 @@ export function SiteHeader() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel><Link href="/dashboard">My Account</Link></DropdownMenuLabel>
+              <DropdownMenuLabel>{user ? user.displayName || "My Account" : "Account"}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/login">Login</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/register">Register</Link>
-              </DropdownMenuItem>
+              {user ? (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link href="/login">Login</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/register">Register</Link>
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/seller/login">Seller Portal</Link>
@@ -114,6 +90,5 @@ export function SiteHeader() {
         </div>
       </div>
     </header>
-  )
+  );
 }
-

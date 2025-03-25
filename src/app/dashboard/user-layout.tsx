@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Heart, Home, Leaf, LogOut, MapPin, Settings, ShoppingBag, User, Menu } from "lucide-react";
+import { Heart, Home, Leaf, LogOut, MapPin, Settings, ShoppingBag, User, Menu,Star } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -30,6 +30,7 @@ export function UserLayout({ children }: { children: React.ReactNode }) {
     { href: "/dashboard/wishlist", label: "Wishlist", icon: <Heart className="h-5 w-5" /> },
     { href: "/dashboard/profile", label: "Profile", icon: <User className="h-5 w-5" /> },
     { href: "/dashboard/settings", label: "Settings", icon: <Settings className="h-5 w-5" /> },
+    { href: "/dashboard/reviews", label: "Reviews", icon: <Star className="h-5 w-5" /> }
   ];
 
   const SidebarContent = () => (

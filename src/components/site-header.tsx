@@ -62,7 +62,9 @@ export function SiteHeader() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{user ? user.displayName || "My Account" : "Account"}</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                {user ? (user.firstName || "My Account") : "Account"}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {user ? (
                 <>

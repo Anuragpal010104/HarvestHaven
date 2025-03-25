@@ -10,30 +10,56 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signOut, 
-  User, 
+  User as FirebaseUser, 
   UserCredential 
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+
+// Define a custom user type that extends Firebase's User with additional fields
+interface CustomUser extends FirebaseUser {
+  firstName?: string;
+  lastName?: string;
+  role?: "buyer" | "seller";
+}
 
 interface AuthContextType {
-  user: User | null;
+  user: CustomUser | null;
   loading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<UserCredential>;
-  register: (email: string, password: string, role: "buyer" | "seller") => Promise<UserCredential>;
+  register: (email: string, password: string, role: "buyer" | "seller", firstName: string, lastName: string) => Promise<UserCredential>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<CustomUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        // Fetch additional user data from Firestore
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          // Merge Firebase user with Firestore data
+          setUser({
+            ...currentUser,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            role: userData.role,
+          });
+        } else {
+          setUser(currentUser); // Fallback to just Firebase user if no Firestore data
+        }
+      } else {
+        setUser(null);
+      }
       setLoading(false);
       setError(null);
     }, (error) => {
@@ -53,15 +79,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const register = useCallback(async (email: string, password: string, role: "buyer" | "seller") => {
+  const register = useCallback(async (
+    email: string, 
+    password: string, 
+    role: "buyer" | "seller",
+    firstName: string,
+    lastName: string
+  ) => {
     try {
       setError(null);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-      // Create user profile in Firestore
+      // Create user profile in Firestore with firstName and lastName
       await setDoc(doc(db, "users", userCredential.user.uid), {
         email,
         role,
+        firstName,
+        lastName,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });

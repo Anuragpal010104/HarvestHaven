@@ -12,7 +12,7 @@ import { ChevronLeft, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { getProductById, Product } from "@/lib/db";
+import { getProductById, Product,addToWishlist } from "@/lib/db";
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -90,6 +90,25 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       });
     }
   };
+
+  const handleAddToWishlist = async (product: Product) => {
+    if (!user) {
+      toast.error("Please log in", {
+        description: "You need to be logged in to add items to your wishlist.",
+      });
+      return;
+    }
+
+    try {
+      await addToWishlist(user.uid, product.id);
+      toast.success("Added to wishlist", {
+        description: `${product.title} has been added to your wishlist.`,
+      });
+    } catch (error) {
+      console.error("Error adding to wishlist:", error);
+      toast.error("Failed to add to wishlist");
+    }
+  }
 
   if (loading) {
     return <div className="container px-4 py-12 text-center">Loading product...</div>;
@@ -192,7 +211,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+      </div>a
     </div>
   );
 }

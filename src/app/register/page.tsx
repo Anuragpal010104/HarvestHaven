@@ -1,4 +1,4 @@
-//app/register/page.tsx
+// app/register/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -47,11 +47,23 @@ export default function RegisterPage() {
         lastName,
         email,
         role: "buyer",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
-      console.log("Writing to Firestore:", userData);
+      console.log("Writing to Firestore (users):", userData);
 
+      // Create users document
       await setDoc(doc(db, "users", userCredential.user.uid), userData);
-      console.log("Firestore write successful");
+      console.log("Firestore write successful (users)");
+
+      // Create buyerProfiles document
+      const buyerProfileData = {
+        shippingAddresses: [],
+        wishlist: [],
+      };
+      console.log("Writing to Firestore (buyerProfiles):", buyerProfileData);
+      await setDoc(doc(db, "buyerProfiles", userCredential.user.uid), buyerProfileData);
+      console.log("Firestore write successful (buyerProfiles)");
 
       toast("Registration successful", { description: "Welcome to OrganicMarket!" });
       router.push("/");
@@ -63,6 +75,8 @@ export default function RegisterPage() {
         message = "Invalid data sent to Firestore.";
       } else if (error.code === "unauthenticated") {
         message = "User not authenticated.";
+      } else if (error.code === "auth/email-already-in-use") {
+        message = "This email is already registered.";
       }
       console.error("Error details:", error);
       toast.error("Registration failed", { description: message });

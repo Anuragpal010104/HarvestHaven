@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { db } from "./firebase";
 import { 
   collection, 
@@ -8,7 +9,10 @@ import {
   deleteDoc, 
   query, 
   where,
-  getDoc 
+  getDoc,
+  arrayUnion,
+  arrayRemove,
+  setDoc 
 } from "firebase/firestore";
 
 // Define Product interface for Firestore (without id, as it's added by Firestore)
@@ -28,6 +32,9 @@ interface ProductBase {
 //   id: string;
 // }
 export interface Product {
+  rating: ReactNode;
+  badge: any;
+  image: string;
   id: string;
   title: string;
   description: string;
@@ -154,3 +161,91 @@ export const deleteProduct = async (productId: string): Promise<void> => {
     throw new Error(`Failed to delete product: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
+
+export const addToCart = async (userId: string, product: Product): Promise<void> => {
+  try {
+    const cartRef = doc(db, "carts", userId);
+    const cartSnap = await getDoc(cartRef);
+
+    const cartItem = {
+      productId: product.id,
+      name: product.title,
+      price: product.price,
+      quantity: 1,
+      image: product.imageBase64 || "/placeholder.svg",
+    };
+
+    if (cartSnap.exists()) {
+      const existingItems = cartSnap.data().items || [];
+      const existingItemIndex = existingItems.findIndex(
+        (item: any) => item.productId === cartItem.productId
+      );
+
+      if (existingItemIndex >= 0) {
+        const updatedItems = [...existingItems];
+        updatedItems[existingItemIndex].quantity += 1;
+        await updateDoc(cartRef, { items: updatedItems });
+      } else {
+        await updateDoc(cartRef, { items: [...existingItems, cartItem] });
+      }
+    } else {
+      await setDoc(cartRef, {
+        userId: userId,
+        items: [cartItem],
+      });
+    }
+  } catch (error) {
+    console.error("Error adding to cart:", error);
+    throw new Error(`Failed to add to cart: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
+
+// Wishlist functions
+export const addToWishlist = async (userId: string, productId: string): Promise<void> => {
+  try {
+    const buyerProfileRef = doc(db, "buyerProfiles", userId);
+    await updateDoc(buyerProfileRef, {
+      wishlist: arrayUnion(productId)
+    });
+  } catch (error) {
+    console.error("Error adding to wishlist:", error);
+    throw new Error(`Failed to add to wishlist: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
+
+export const removeFromWishlist = async (userId: string, productId: string): Promise<void> => {
+  try {
+    const buyerProfileRef = doc(db, "buyerProfiles", userId);
+    await updateDoc(buyerProfileRef, {
+      wishlist: arrayRemove(productId)
+    });
+  } catch (error) {
+    console.error("Error removing from wishlist:", error);
+    throw new Error(`Failed to remove from wishlist: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
+
+export const getWishlistItems = async (userId: string): Promise<Product[]> => {
+  try {
+    const buyerProfileRef = doc(db, "buyerProfiles", userId);
+    const buyerProfileSnap = await getDoc(buyerProfileRef);
+    
+    if (!buyerProfileSnap.exists()) return [];
+    
+    const wishlistIds = buyerProfileSnap.data().wishlist || [];
+    if (wishlistIds.length === 0) return [];
+
+    const wishlistProducts = await Promise.all(
+      wishlistIds.map(async (productId: string) => {
+        const product = await getProductById(productId);
+        return product;
+      })
+    );
+
+    return wishlistProducts.filter((product): product is Product => product !== null);
+  } catch (error) {
+    console.error("Error fetching wishlist items:", error);
+    throw new Error(`Failed to fetch wishlist: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
+

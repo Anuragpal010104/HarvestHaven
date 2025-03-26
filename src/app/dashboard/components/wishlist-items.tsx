@@ -1,134 +1,142 @@
-"use client"
+// wishlist-items.tsx
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-// import { useToast } from "@/hooks/use-toast"
-import { Heart, ShoppingCart, Trash } from "lucide-react"
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart, Trash2 } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
+import { Product, getWishlistItems, removeFromWishlist, addToCart as addToCartDb } from "@/lib/db";
+import { toast } from "sonner";
+import { auth, db } from "@/lib/firebase";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 
 export function WishlistItems() {
-  // const { toast } = useToast()
-  const [wishlistItems, setWishlistItems] = useState([
-    {
-      id: 1,
-      name: "Organic Avocados",
-      description: "Fresh, ripe avocados grown without pesticides",
-      price: 4.99,
-      image: "/placeholder.svg?height=200&width=200",
-      rating: 4.8,
-    },
-    {
-      id: 2,
-      name: "Raw Honey",
-      description: "Pure, unfiltered honey from organic beekeepers",
-      price: 8.99,
-      image: "/placeholder.svg?height=200&width=200",
-      rating: 4.9,
-    },
-    {
-      id: 7,
-      name: "Organic Blueberries",
-      description: "Sweet, antioxidant-rich berries",
-      price: 5.99,
-      image: "/placeholder.svg?height=200&width=200",
-      rating: 4.9,
-    },
-    {
-      id: 3,
-      name: "Organic Quinoa",
-      description: "Protein-rich ancient grain, sustainably farmed",
-      price: 6.49,
-      image: "/placeholder.svg?height=200&width=200",
-      rating: 4.7,
-    },
-    {
-      id: 23,
-      name: "Extra Virgin Olive Oil",
-      description: "Cold-pressed from organic olives",
-      price: 12.99,
-      image: "/placeholder.svg?height=200&width=200",
-      rating: 4.8,
-    },
-    {
-      id: 16,
-      name: "Free-Range Eggs",
-      description: "Farm-fresh eggs from free-range hens",
-      price: 5.99,
-      image: "/placeholder.svg?height=200&width=200",
-      rating: 4.9,
-    },
-    {
-      id: 24,
-      name: "Organic Almond Butter",
-      description: "Creamy, protein-rich spread with no additives",
-      price: 9.99,
-      image: "/placeholder.svg?height=200&width=200",
-      rating: 4.6,
-    },
-  ])
+  const { user } = useAuth();
+  const [wishlistItems, setWishlistItems] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const removeFromWishlist = (id: number) => {
-    setWishlistItems(wishlistItems.filter((item) => item.id !== id))
-    // toast({
-    //   title: "Removed from wishlist",
-    //   description: "Item has been removed from your wishlist.",
-    // })
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      if (!user) return;
+      try {
+        const items = await getWishlistItems(user.uid);
+        setWishlistItems(items);
+      } catch (error) {
+        console.error("Error fetching wishlist:", error);
+        toast.error("Failed to load wishlist");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchWishlist();
+  }, [user]);
+
+  const handleRemoveFromWishlist = async (productId: string) => {
+    if (!user) return;
+    try {
+      await removeFromWishlist(user.uid, productId);
+      setWishlistItems(items => items.filter(item => item.id !== productId));
+      toast.success("Removed from wishlist");
+    } catch (error) {
+      console.error("Error removing from wishlist:", error);
+      toast.error("Failed to remove from wishlist");
+    }
+  };
+
+  const addToCart = async (product: Product) => {
+    if (!user) {
+      toast.error("Please log in", {
+        description: "You need to be logged in to add items to your cart.",
+      });
+      return;
+    }
+
+    try {
+      const cartRef = doc(db, "carts", user.uid);
+      const cartSnap = await getDoc(cartRef);
+
+      const cartItem = {
+        productId: product.id,
+        name: product.title,
+        price: product.price,
+        quantity: 1,
+        image: product.imageBase64 || "/placeholder.svg",
+      };
+
+      if (cartSnap.exists()) {
+        const existingItems = cartSnap.data().items || [];
+        const existingItemIndex = existingItems.findIndex(
+          (item: any) => item.productId === cartItem.productId
+        );
+
+        if (existingItemIndex >= 0) {
+          const updatedItems = [...existingItems];
+          updatedItems[existingItemIndex].quantity += 1;
+          await updateDoc(cartRef, { items: updatedItems });
+        } else {
+          await updateDoc(cartRef, { items: [...existingItems, cartItem] });
+        }
+      } else {
+        await setDoc(cartRef, {
+          userId: user.uid,
+          items: [cartItem],
+        });
+      }
+
+      toast.success("Added to cart", {
+        description: `1 × ${product.title} added to your cart.`,
+      });
+    } catch (error: any) {
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to add to cart");
+    }
+  };
+
+  if (loading) {
+    return <div>Loading wishlist...</div>;
   }
 
-  const addToCart = (item: { id?: number; name: any; description?: string; price?: number; image?: string; rating?: number }) => {
-    // toast({
-    //   title: "Added to cart",
-    //   description: `${item.name} has been added to your cart.`,
-    // })
+  if (!wishlistItems.length) {
+    return <div>Your wishlist is empty</div>;
   }
 
   return (
-    <div>
-      {wishlistItems.length === 0 ? (
-        <div className="text-center py-8">
-          <Heart className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-          <h3 className="text-lg font-medium mb-2">Your wishlist is empty</h3>
-          <p className="text-gray-500 mb-4">Save items you love to your wishlist and revisit them anytime.</p>
-          <Link href="/products">
-            <Button>Browse Products</Button>
-          </Link>
+    <div className="space-y-4">
+      {wishlistItems.map((item) => (
+        <div key={item.id} className="flex items-center space-x-4 border-b pb-4">
+          <div className="relative h-20 w-20 flex-shrink-0">
+            <Image
+              src={item.imageBase64 || "/placeholder.svg"}
+              alt={item.title}
+              fill
+              className="object-cover rounded"
+            />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold">{item.title}</h3>
+            <p className="text-sm text-gray-500">{item.description}</p>
+            <p className="font-bold">${item.price.toFixed(2)}</p>
+          </div>
+          <div className="flex space-x-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => addToCart(item)}
+            >
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              Add to Cart
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleRemoveFromWishlist(item.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {wishlistItems.map((item) => (
-            <Card key={item.id} className="overflow-hidden">
-              <div className="relative">
-                <div className="relative h-48 w-full">
-                  <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 bg-white rounded-full h-8 w-8 shadow-sm hover:text-red-500"
-                  onClick={() => removeFromWishlist(item.id)}
-                >
-                  <Trash className="h-4 w-4" />
-                  <span className="sr-only">Remove from wishlist</span>
-                </Button>
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-lg mb-1">{item.name}</h3>
-                <p className="text-sm text-gray-500 mb-2">{item.description}</p>
-                <div className="flex justify-between items-center">
-                  <span className="font-bold">${item.price.toFixed(2)}</span>
-                  <Button size="sm" onClick={() => addToCart(item)}>
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Add to Cart
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      ))}
     </div>
-  )
+  );
 }
-

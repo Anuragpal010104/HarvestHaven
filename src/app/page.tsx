@@ -1,10 +1,79 @@
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Leaf, ShoppingCart, Star } from "lucide-react"
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Leaf, ShoppingCart, Star, Heart } from "lucide-react";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { toast } from "sonner";
+import { getAllProducts, Product, addToCart, addToWishlist } from "@/lib/db";
+import { auth } from "@/lib/firebase";
 
 export default function Home() {
+  const [user] = useAuthState(auth);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const fetchedProducts = await getAllProducts();
+        // Show only first 3 products as featured (or you could add a 'featured' field in Firestore)
+        setProducts(fetchedProducts.slice(0, 3));
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        toast.error("Failed to load featured products");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const handleAddToCart = async (product: Product) => {
+    if (!user) {
+      toast.error("Please log in", {
+        description: "You need to be logged in to add items to your cart.",
+      });
+      return;
+    }
+
+    try {
+      await addToCart(user.uid, product);
+      toast.success("Added to cart", {
+        description: `1 × ${product.title} added to your cart.`,
+      });
+    } catch (error: any) {
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to add to cart", {
+        description: error.message || "Something went wrong.",
+      });
+    }
+  };
+
+  const handleAddToWishlist = async (product: Product) => {
+    if (!user) {
+      toast.error("Please log in", {
+        description: "You need to be logged in to add items to your wishlist.",
+      });
+      return;
+    }
+
+    try {
+      await addToWishlist(user.uid, product.id);
+      toast.success("Added to wishlist", {
+        description: `${product.title} has been added to your wishlist.`,
+      });
+    } catch (error: any) {
+      console.error("Error adding to wishlist:", error);
+      toast.error("Failed to add to wishlist", {
+        description: error.message || "Something went wrong.",
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -60,48 +129,64 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 sm:grid-cols-2 md:grid-cols-3 lg:gap-8">
-            {featuredProducts.map((product) => (
-              <Link
-                key={product.id}
-                href={`/products/${product.id}`}
-                className="group relative overflow-hidden rounded-lg"
-              >
-                <Card className="h-full transition-all hover:shadow-lg">
-                  <div className="relative h-60 overflow-hidden">
-                    <Image
-                      src={product.image || "/placeholder.svg"}
-                      alt={product.name}
-                      fill
-                      className="object-cover transition-transform group-hover:scale-105"
-                    />
-                    {product.badge && (
-                      <div className="absolute top-2 right-2 bg-green-600 text-white text-xs font-medium px-2 py-1 rounded">
-                        {product.badge}
-                      </div>
-                    )}
-                  </div>
-                  <CardContent className="p-4">
+          {loading ? (
+            <div className="text-center py-12">Loading featured products...</div>
+          ) : (
+            <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 sm:grid-cols-2 md:grid-cols-3 lg:gap-8">
+              {products.map((product) => (
+                <Card key={product.id} className="h-full transition-all hover:shadow-lg flex flex-col">
+                  <Link href={`/products/${product.id}`} className="block">
+                    <div className="relative h-60 overflow-hidden">
+                      <Image
+                        src={product.imageBase64 || "/placeholder.svg"}
+                        alt={product.title}
+                        fill
+                        className="object-cover transition-transform group-hover:scale-105"
+                      />
+                    </div>
+                  </Link>
+                  <CardContent className="p-4 flex flex-col flex-grow">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-lg">{product.name}</h3>
-                      <div className="flex items-center">
+                      <h3 className="font-semibold text-lg truncate">{product.title}</h3>
+                      <div className="flex items-center flex-shrink-0">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="ml-1 text-sm text-gray-600">{product.rating}</span>
+                        <span className="ml-1 text-sm text-gray-600">4.5</span> {/* Static rating for now */}
                       </div>
                     </div>
-                    <p className="text-sm text-gray-500 mt-2">{product.description}</p>
-                    <div className="flex items-center justify-between mt-4">
-                      <span className="font-bold">${product.price.toFixed(2)}</span>
-                      <Button size="sm" variant="outline" className="rounded-full">
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        Add to Cart
-                      </Button>
+                    <p className="text-sm text-gray-500 mt-2 line-clamp-2">{product.description}</p>
+                    <div className="mt-4 flex flex-col gap-2 flex-grow justify-end">
+                      <span className="font-bold text-lg">${product.price.toFixed(2)}</span>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-full w-full sm:w-auto flex-1"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleAddToCart(product);
+                          }}
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-2" />
+                          Add to Cart
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-full w-full sm:w-auto flex-1"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleAddToWishlist(product);
+                          }}
+                        >
+                          <Heart className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
           <div className="flex justify-center">
             <Link href="/products">
               <Button variant="outline" size="lg">
@@ -113,7 +198,33 @@ export default function Home() {
       </section>
 
       {/* Why Choose Us */}
-      <section className="w-full py-12 md:py-24 lg:py-32 bg-green-50">
+      {/* Why Choose Us */}
+<section className="w-full py-12 md:py-24 lg:py-32 bg-green-50">
+  <div className="container px-4 md:px-6">
+    <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
+      <div className="space-y-2">
+        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Why Choose Us</h2>
+        <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+          We're committed to providing the highest quality organic products.
+        </p>
+      </div>
+    </div>
+    <div className="max-w-5xl mx-auto grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+      {features.map((feature, index) => (
+        <Card key={index} className="bg-white mx-auto w-full max-w-sm">
+          <CardContent className="p-6 flex flex-col items-center text-center h-full">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 mb-4 flex-shrink-0">
+              <Leaf className="h-6 w-6 text-green-600" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+            <p className="text-gray-500 text-sm md:text-base flex-grow">{feature.description}</p>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  </div>
+</section>
+      {/* <section className="w-full py-12 md:py-24 lg:py-32 bg-green-50">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <div className="space-y-2">
@@ -137,38 +248,10 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
-  )
+  );
 }
-
-const featuredProducts = [
-  {
-    id: 1,
-    name: "Organic Avocados",
-    description: "Fresh, ripe avocados grown without pesticides",
-    price: 4.99,
-    image: "https://images.pexels.com/photos/5454020/pexels-photo-5454020.jpeg?auto=compress&cs=tinysrgb&w=600",
-    rating: 4.8,
-    badge: "Best Seller",
-  },
-  {
-    id: 2,
-    name: "Raw Honey",
-    description: "Pure, unfiltered honey from organic beekeepers",
-    price: 8.99,
-    image: "https://images.pexels.com/photos/7990484/pexels-photo-7990484.jpeg?auto=compress&cs=tinysrgb&w=600",
-    rating: 4.9,
-  },
-  {
-    id: 3,
-    name: "Organic Quinoa",
-    description: "Protein-rich ancient grain, sustainably farmed",
-    price: 6.49,
-    image: "https://images.pexels.com/photos/1640767/pexels-photo-1640767.jpeg?auto=compress&cs=tinysrgb&w=600",
-    rating: 4.7,
-  },
-]
 
 const features = [
   {
@@ -183,5 +266,4 @@ const features = [
     title: "Eco-Friendly Packaging",
     description: "Our packaging is biodegradable and made from recycled materials.",
   },
-]
-
+];

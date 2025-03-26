@@ -1,11 +1,10 @@
 "use client"
 
-import { type ReactNode, useState, useEffect } from "react"
+import { type ReactNode, useState, useEffect, useMemo } from "react"
 import { Elements } from "@stripe/react-stripe-js"
+import { StripeElementsOptions } from "@stripe/stripe-js"
 import { loadStripe } from "@stripe/stripe-js"
 
-// This would be your publishable key from your Stripe dashboard
-// In a real app, this would be an environment variable
 const stripePromise = loadStripe("pk_test_your_publishable_key")
 
 interface StripeProviderProps {
@@ -13,15 +12,12 @@ interface StripeProviderProps {
 }
 
 export function StripeProvider({ children }: StripeProviderProps) {
-  const [clientSecret, setClientSecret] = useState("")
+  const [clientSecret, setClientSecret] = useState<string | null>(null)
 
   useEffect(() => {
-    // Create a PaymentIntent as soon as the page loads
-    // In a real implementation, this would be a server-side API call
-    // to create a PaymentIntent with the order amount
     async function createPaymentIntent() {
       try {
-        // This would be a fetch to your backend API in a real implementation
+        // Replace this with an actual API call in production
         // const response = await fetch("/api/create-payment-intent", {
         //   method: "POST",
         //   headers: { "Content-Type": "application/json" },
@@ -30,8 +26,7 @@ export function StripeProvider({ children }: StripeProviderProps) {
         // const data = await response.json();
         // setClientSecret(data.clientSecret);
 
-        // For demo purposes, we're setting a mock client secret
-        setClientSecret("mock_client_secret")
+        setClientSecret("mock_client_secret") // Mocked for demo
       } catch (error) {
         console.error("Error creating payment intent:", error)
       }
@@ -40,26 +35,28 @@ export function StripeProvider({ children }: StripeProviderProps) {
     createPaymentIntent()
   }, [])
 
-  const options = {
-    clientSecret,
-    appearance: {
-      theme: "stripe" as "stripe", // Ensure the theme matches the expected literal type
-    },
-  }
+  const options: StripeElementsOptions | undefined = useMemo(() => {
+    return clientSecret
+      ? {
+          clientSecret,
+          appearance: {
+            theme: "stripe" as const, // ✅ Correct usage of `as const`
+          },
+        }
+      : undefined
+  }, [clientSecret])
 
-  return (
-    <>
-      {clientSecret && (
-        <Elements stripe={stripePromise} options={options}>
-          {children}
-        </Elements>
-      )}
-      {!clientSecret && (
-        <div className="flex items-center justify-center p-6">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-        </div>
-      )}
-    </>
+  return clientSecret ? (
+    <Elements stripe={stripePromise} options={options}>
+      {children}
+    </Elements>
+  ) : (
+    <div
+      className="flex items-center justify-center p-6"
+      aria-live="polite"
+      role="status"
+    >
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+    </div>
   )
 }
-

@@ -12,12 +12,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-// import { useToast } from "@/hooks/use-toast"
 import { CheckCircle2, CreditCard, Loader2, Lock, MapPin, ShoppingBag } from "lucide-react"
 
 export default function CheckoutPage() {
   const router = useRouter()
-//   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [activeStep, setActiveStep] = useState("shipping")
   const [shippingMethod, setShippingMethod] = useState("standard")
@@ -25,7 +23,6 @@ export default function CheckoutPage() {
   const [discountCode, setDiscountCode] = useState("")
   const [discountApplied, setDiscountApplied] = useState(false)
 
-  // Form states
   const [shippingInfo, setShippingInfo] = useState({
     firstName: "",
     lastName: "",
@@ -40,7 +37,6 @@ export default function CheckoutPage() {
     saveAddress: true,
   })
 
-  // Mock cart items
   const cartItems = [
     {
       id: 1,
@@ -68,16 +64,14 @@ export default function CheckoutPage() {
     },
   ]
 
-  // Calculate order summary
   const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
   const shipping = shippingMethod === "express" ? 9.99 : shippingMethod === "same-day" ? 14.99 : 5.99
   const discount = discountApplied ? 5.0 : 0
-  const tax = (subtotal - discount) * 0.08 // 8% tax rate
+  const tax = (subtotal - discount) * 0.08
   const total = subtotal + shipping + tax - discount
 
-  const handleShippingSubmit = (e: { preventDefault: () => void }) => {
+  const handleShippingSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // Validate shipping info
     if (
       !shippingInfo.firstName ||
       !shippingInfo.lastName ||
@@ -88,45 +82,17 @@ export default function CheckoutPage() {
       !shippingInfo.zipCode ||
       !shippingInfo.country
     ) {
-    //   toast({
-    //     title: "Missing information",
-    //     description: "Please fill in all required fields.",
-    //     variant: "destructive",
-    //   })
       return
     }
-
-    // Move to payment step
     setActiveStep("payment")
   }
 
-  const handlePaymentSubmit = async (e: { preventDefault: () => void }) => {
+  const handlePaymentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-
-    // Simulate payment processing
     try {
-      // In a real implementation, this is where you would:
-      // 1. Create a payment intent with Stripe
-      // 2. Confirm the payment with the card details
-      // 3. Handle the payment result
-
       await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      // Simulate successful payment
-    //   toast({
-    //     title: "Payment successful",
-    //     description: "Your order has been placed successfully.",
-    //   })
-
-      // Move to confirmation step
       setActiveStep("confirmation")
-    } catch (error) {
-    //   toast({
-    //     title: "Payment failed",
-    //     description: "There was an error processing your payment. Please try again.",
-    //     variant: "destructive",
-    //   })
     } finally {
       setIsLoading(false)
     }
@@ -135,20 +101,10 @@ export default function CheckoutPage() {
   const handleApplyDiscount = () => {
     if (discountCode.toLowerCase() === "organic10") {
       setDiscountApplied(true)
-    //   toast({
-    //     title: "Discount applied",
-    //     description: "Your discount code has been applied to your order.",
-    //   })
-    } else {
-    //   toast({
-    //     title: "Invalid discount code",
-    //     description: "The discount code you entered is invalid or expired.",
-    //     variant: "destructive",
-    //   })
     }
   }
 
-  const handleInputChange = (e: { target: { name: any; value: any } }) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setShippingInfo((prev) => ({
       ...prev,
@@ -156,7 +112,7 @@ export default function CheckoutPage() {
     }))
   }
 
-  const handleCheckboxChange = (e: { target: { name: any; checked: any } }) => {
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target
     setShippingInfo((prev) => ({
       ...prev,
@@ -172,7 +128,6 @@ export default function CheckoutPage() {
       </div>
 
       <div className="grid gap-8 md:grid-cols-3">
-        {/* Main Checkout Form */}
         <div className="md:col-span-2">
           <Tabs value={activeStep} className="space-y-8">
             <TabsList className="grid w-full grid-cols-3">
@@ -187,7 +142,6 @@ export default function CheckoutPage() {
               </TabsTrigger>
             </TabsList>
 
-            {/* Shipping Information */}
             <TabsContent value="shipping" className="space-y-4">
               <Card>
                 <CardHeader>
@@ -374,7 +328,6 @@ export default function CheckoutPage() {
               </Card>
             </TabsContent>
 
-            {/* Payment Information */}
             <TabsContent value="payment" className="space-y-4">
               <Card>
                 <CardHeader>
@@ -412,7 +365,6 @@ export default function CheckoutPage() {
                             </div>
                           </div>
 
-                          {/* Stripe Card Element would go here in a real implementation */}
                           <div className="space-y-4">
                             <div className="space-y-2">
                               <Label htmlFor="cardNumber">Card Number</Label>
@@ -476,7 +428,7 @@ export default function CheckoutPage() {
                             Processing...
                           </>
                         ) : (
-                          `Pay ${total.toFixed(2)}`
+                          `Pay $${total.toFixed(2)}`
                         )}
                       </Button>
                     </div>
@@ -485,7 +437,6 @@ export default function CheckoutPage() {
               </Card>
             </TabsContent>
 
-            {/* Order Confirmation */}
             <TabsContent value="confirmation" className="space-y-4">
               <Card>
                 <CardHeader className="text-center">
@@ -494,7 +445,7 @@ export default function CheckoutPage() {
                   </div>
                   <CardTitle className="text-2xl">Order Confirmed!</CardTitle>
                   <CardDescription>
-                    Thank you for your order. We've received your payment and will process your order shortly.
+                    Thank you for your order. We&apos;ve received your payment and will process your order shortly.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -590,7 +541,6 @@ export default function CheckoutPage() {
           </Tabs>
         </div>
 
-        {/* Order Summary */}
         <div>
           <div className="sticky top-4">
             <Card>
@@ -598,7 +548,6 @@ export default function CheckoutPage() {
                 <CardTitle>Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Cart Items */}
                 <div className="space-y-4">
                   {cartItems.map((item) => (
                     <div key={item.id} className="flex items-start gap-4">
@@ -620,7 +569,6 @@ export default function CheckoutPage() {
 
                 <Separator />
 
-                {/* Discount Code */}
                 <div className="space-y-2">
                   <Label htmlFor="discountCode">Discount Code</Label>
                   <div className="flex space-x-2">
@@ -640,7 +588,6 @@ export default function CheckoutPage() {
 
                 <Separator />
 
-                {/* Price Breakdown */}
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
@@ -691,4 +638,3 @@ export default function CheckoutPage() {
     </div>
   )
 }
-

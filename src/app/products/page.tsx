@@ -31,93 +31,100 @@ export default function ProductsPage() {
     fetchProducts();
   }, []);
 
+
   const handleAddToCart = async (product: Product) => {
     if (!user) {
-      toast.error("Please log in", {
-        description: "You need to be logged in to add items to your cart.",
+      toast.error("Login Required", {
+        description: "Please log in to add items to your cart.",
+        icon: "🚫",
       });
       return;
     }
-
+  
     try {
       await addToCart(user.uid, product);
-      toast.success("Added to cart", {
-        description: `1 × ${product.title} added to your cart.`,
+      toast.success("Added to Cart ✅", {
+        description: `1 × ${product.title} added to cart.`,
+        icon: "🛒",
       });
     } catch (error: any) {
       console.error("Error adding to cart:", error);
-      toast.error("Failed to add to cart", {
+      toast.error("Failed to Add", {
         description: error.message || "Something went wrong.",
+        icon: "⚠️",
       });
     }
   };
+  
 
+ 
   const handleAddToWishlist = async (product: Product) => {
     if (!user) {
-      toast.error("Please log in", {
-        description: "You need to be logged in to add items to your wishlist.",
+      toast.error("Login Required", {
+        description: "Please log in to add items to your wishlist.",
+        icon: "🚫",
       });
       return;
     }
-
+  
     try {
       await addToWishlist(user.uid, product.id);
-      toast.success("Added to wishlist", {
-        description: `${product.title} has been added to your wishlist.`,
+      toast.success("Added to Wishlist ❤️", {
+        description: `${product.title} added to your wishlist.`,
+        icon: "💖",
       });
     } catch (error: any) {
       console.error("Error adding to wishlist:", error);
-      toast.error("Failed to add to wishlist", {
+      toast.error("Failed to Add", {
         description: error.message || "Something went wrong.",
+        icon: "⚠️",
       });
     }
   };
 
   if (loading) {
-    return <div className="container px-4 py-12 text-center">Loading products...</div>;
+    return <div className="container px-4 py-12 text-center text-lg font-medium">Loading products...</div>;
   }
 
   return (
     <div className="container px-4 py-12 md:py-24">
-      <div className="flex flex-col items-center justify-center space-y-4 text-center">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-            All Products
-          </h1>
-          <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-            Browse our selection of certified organic products
-          </p>
-        </div>
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">All Products</h1>
+        <p className="max-w-2xl mx-auto text-gray-500 md:text-xl">
+          Browse our selection of certified organic products.
+        </p>
       </div>
-      <div className="grid grid-cols-1 gap-6 py-12 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+
+      <div className="grid grid-cols-1 gap-8 py-12 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {products.map((product) => (
-          <Card key={product.id} className="h-full transition-all hover:shadow-lg flex flex-col">
-            <Link href={`/products/${product.id}`} className="block">
-              <div className="relative h-60 overflow-hidden">
+          <Card key={product.id} className="h-full flex flex-col transition-shadow hover:shadow-xl rounded-xl">
+            <Link href={`/products/${product.id}`} className="block relative group">
+              <div className="relative h-60 overflow-hidden rounded-t-xl">
                 <Image
                   src={product.imageBase64 || "/placeholder.svg"}
                   alt={product.title}
                   fill
-                  className="object-cover transition-transform group-hover:scale-105"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
             </Link>
             <CardContent className="p-4 flex flex-col flex-grow">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-lg truncate">{product.title}</h3>
-                <div className="flex items-center flex-shrink-0">
+                <div className="flex items-center">
                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   <span className="ml-1 text-sm text-gray-600">4.5</span>
                 </div>
               </div>
               <p className="text-sm text-gray-500 mt-2 line-clamp-2">{product.description}</p>
+
               <div className="mt-4 flex flex-col gap-2 flex-grow justify-end">
-                <span className="font-bold text-lg">${product.price.toFixed(2)}</span>
-                <div className="flex flex-col sm:flex-row gap-2">
+                <span className="font-bold text-lg text-green-600">${product.price.toFixed(2)}</span>
+                <div className="flex flex-row gap-2">
                   <Button
                     size="sm"
                     variant="outline"
-                    className="rounded-full w-full sm:w-auto flex-1"
+                    className="rounded-full flex-1 transition-all duration-200 hover:bg-green-600 hover:text-white"
                     onClick={(e) => {
                       e.preventDefault();
                       handleAddToCart(product);
@@ -129,7 +136,7 @@ export default function ProductsPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="rounded-full w-full sm:w-auto flex-1"
+                    className="rounded-full flex-1 transition-all duration-200 hover:bg-red-500 hover:text-white"
                     onClick={(e) => {
                       e.preventDefault();
                       handleAddToWishlist(product);

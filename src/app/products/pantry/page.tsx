@@ -15,7 +15,7 @@ export default function PantryItemsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const fetchedProducts = await getProductsByCategory("pantry");
+        const fetchedProducts = await getProductsByCategory("pantry items");
         setProducts(fetchedProducts);
       } catch (error) {
         console.error("Error fetching pantry products:", error);

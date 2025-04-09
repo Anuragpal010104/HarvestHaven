@@ -13,10 +13,31 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/AuthContext";
+import { db } from "@/lib/firebase"; // Import Firestore instance
+import { doc, getDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
 
 export function SiteHeader() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const [isSeller, setIsSeller] = useState(false);
+
+  useEffect(() => {
+    const checkSellerStatus = async () => {
+      if (user?.email) {
+        const sellerDoc = doc(db, "sellers", user.uid); // Assuming UID is used as the document ID
+        const sellerSnap = await getDoc(sellerDoc);
+
+        if (sellerSnap.exists() && sellerSnap.data().role === "seller") {
+          setIsSeller(true);
+        } else {
+          setIsSeller(false);
+        }
+      }
+    };
+
+    checkSellerStatus();
+  }, [user]);
 
   const routes = [
     { href: "/", label: "Home" },
@@ -63,7 +84,7 @@ export function SiteHeader() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>
-                {user ? (user.firstName || "My Account") : "Account"}
+                {user ? user.firstName || "My Account" : "Account"}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {user ? (
@@ -84,9 +105,15 @@ export function SiteHeader() {
                 </>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/seller/login">Seller Portal</Link>
-              </DropdownMenuItem>
+              {isSeller ? (
+                <DropdownMenuItem asChild>
+                  <Link href="/seller/dashboard">Seller Dashboard</Link>
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem asChild>
+                  <Link href="/seller/login">Seller Portal</Link>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

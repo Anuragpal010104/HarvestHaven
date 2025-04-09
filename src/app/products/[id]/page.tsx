@@ -12,7 +12,8 @@ import { ChevronLeft, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { getProductById, Product,addToWishlist } from "@/lib/db";
+import { getProductById, Product, addToWishlist } from "@/lib/db";
+import ReviewsSection from "./reviews-section";
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -211,7 +212,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
             </div>
           </TabsContent>
         </Tabs>
-      </div>a
+      </div>
+
+      {/* Reviews Section */}
+      <ReviewsSection productId={id} />
     </div>
   );
 }

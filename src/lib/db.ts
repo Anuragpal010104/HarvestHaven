@@ -249,3 +249,39 @@ export const getWishlistItems = async (userId: string): Promise<Product[]> => {
   }
 };
 
+// Add a review to a product
+export const addReview = async (productId: string, reviewContent: string): Promise<void> => {
+  try {
+    const reviewData = {
+      content: reviewContent,
+      createdAt: new Date().toISOString(),
+    };
+
+    const productRef = doc(db, "products", productId);
+    await updateDoc(productRef, {
+      reviews: arrayUnion(reviewData),
+    });
+  } catch (error) {
+    console.error("Error adding review:", error);
+    throw new Error(`Failed to add review: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
+
+// Get reviews for a product
+export const getReviews = async (productId: string): Promise<{ content: string; createdAt: string }[]> => {
+  try {
+    const productRef = doc(db, "products", productId);
+    const productSnap = await getDoc(productRef);
+
+    if (productSnap.exists()) {
+      const productData = productSnap.data();
+      return productData.reviews || [];
+    }
+
+    return [];
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    throw new Error(`Failed to fetch reviews: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
+

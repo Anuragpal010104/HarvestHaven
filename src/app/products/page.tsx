@@ -31,7 +31,6 @@ export default function ProductsPage() {
     fetchProducts();
   }, []);
 
-
   const handleAddToCart = async (product: Product) => {
     if (!user) {
       toast.error("Login Required", {
@@ -40,7 +39,7 @@ export default function ProductsPage() {
       });
       return;
     }
-  
+
     try {
       await addToCart(user.uid, product);
       toast.success("Added to Cart ✅", {
@@ -55,9 +54,7 @@ export default function ProductsPage() {
       });
     }
   };
-  
 
- 
   const handleAddToWishlist = async (product: Product) => {
     if (!user) {
       toast.error("Login Required", {
@@ -66,7 +63,7 @@ export default function ProductsPage() {
       });
       return;
     }
-  
+
     try {
       await addToWishlist(user.uid, product.id);
       toast.success("Added to Wishlist ❤️", {

@@ -5,12 +5,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ShoppingCart, Star } from "lucide-react";
-import { getProductsByCategory, Product } from "@/lib/db";
+import { ShoppingCart, Star, Heart } from "lucide-react";
+import { getProductsByCategory, Product, addToCart, addToWishlist } from "@/lib/db";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { toast } from "sonner";
+import { auth } from "@/lib/firebase";
 
 export default function DairyEggsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [user] = useAuthState(auth);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -25,6 +29,54 @@ export default function DairyEggsPage() {
     };
     fetchProducts();
   }, []);
+
+  const handleAddToCart = async (product: Product) => {
+    if (!user) {
+      toast.error("Login Required", {
+        description: "Please log in to add items to your cart.",
+        icon: "🚫",
+      });
+      return;
+    }
+
+    try {
+      await addToCart(user.uid, product);
+      toast.success("Added to Cart ✅", {
+        description: `1 × ${product.title} added to cart.`,
+        icon: "🛒",
+      });
+    } catch (error: any) {
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to Add", {
+        description: error.message || "Something went wrong.",
+        icon: "⚠️",
+      });
+    }
+  };
+
+  const handleAddToWishlist = async (product: Product) => {
+    if (!user) {
+      toast.error("Login Required", {
+        description: "Please log in to add items to your wishlist.",
+        icon: "🚫",
+      });
+      return;
+    }
+
+    try {
+      await addToWishlist(user.uid, product.id);
+      toast.success("Added to Wishlist ❤️", {
+        description: `${product.title} added to your wishlist.`,
+        icon: "💖",
+      });
+    } catch (error: any) {
+      console.error("Error adding to wishlist:", error);
+      toast.error("Failed to Add", {
+        description: error.message || "Something went wrong.",
+        icon: "⚠️",
+      });
+    }
+  };
 
   if (loading) {
     return <div className="container px-4 py-12 text-center">Loading dairy products...</div>;
@@ -64,10 +116,31 @@ export default function DairyEggsPage() {
               <p className="text-sm text-gray-500 mt-2">{product.description}</p>
               <div className="flex items-center justify-between mt-4">
                 <span className="font-bold">${product.price.toFixed(2)}</span>
-                <Button size="sm" variant="outline" className="rounded-full">
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Add to Cart
-                </Button>
+                <div className="flex flex-row gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full flex-1 transition-all duration-200 hover:bg-green-600 hover:text-white"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleAddToCart(product);
+                    }}
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Add to Cart
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full flex-1 transition-all duration-200 hover:bg-red-500 hover:text-white"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleAddToWishlist(product);
+                    }}
+                  >
+                    <Heart className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

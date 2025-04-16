@@ -71,8 +71,34 @@ export default function CartPage() {
   const shipping = 5.99;
   const total = subtotal + shipping;
 
-  const handleCheckout = () => {
-    router.push("/checkout"); // Redirect to /checkout.tsx
+  const handleCheckout = async () => {
+    if (!user) {
+      toast.error("Please log in to proceed to checkout.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/create-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: Math.round(total * 100), // Convert to cents
+          currency: "usd",
+          metadata: { userId: user.uid },
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.clientSecret) {
+        router.push(`/checkout?clientSecret=${data.clientSecret}`);
+      } else {
+        toast.error("Failed to initiate payment. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error during checkout:", error);
+      toast.error("An error occurred. Please try again later.");
+    }
   };
 
   return (

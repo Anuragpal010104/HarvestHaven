@@ -1,7 +1,9 @@
+// Move the file to `src/app/api/create-payment/page.tsx` to align with Next.js App Router conventions.
+// Update the file structure to ensure the API route is accessible at `/api/create-payment`.
+
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-// Initialize Stripe with your secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2025-02-24.acacia",
 });

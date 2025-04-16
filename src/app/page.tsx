@@ -132,60 +132,61 @@ export default function Home() {
           {loading ? (
             <div className="text-center py-12">Loading featured products...</div>
           ) : (
-            <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 sm:grid-cols-2 md:grid-cols-3 lg:gap-8">
-              {products.map((product) => (
-                <Card key={product.id} className="h-full transition-all hover:shadow-lg flex flex-col">
-                  <Link href={`/products/${product.id}`} className="block">
-                    <div className="relative h-60 overflow-hidden">
-                      <Image
-                        src={product.imageBase64 || "/placeholder.svg"}
-                        alt={product.title}
-                        fill
-                        className="object-cover transition-transform group-hover:scale-105"
-                      />
+            <div className="grid grid-cols-1 gap-8 py-12 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {products.map((product) => (
+              <Card key={product.id} className="h-full flex flex-col transition-shadow hover:shadow-xl rounded-xl">
+                <Link href={`/products/${product.id}`} className="block relative group">
+                  <div className="relative h-60 overflow-hidden rounded-t-xl">
+                    <Image
+                      src={product.imageBase64 || "/placeholder.svg"}
+                      alt={product.title}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  </div>
+                </Link>
+                <CardContent className="p-4 flex flex-col flex-grow">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-lg truncate">{product.title}</h3>
+                    <div className="flex items-center">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="ml-1 text-sm text-gray-600">4.5</span>
                     </div>
-                  </Link>
-                  <CardContent className="p-4 flex flex-col flex-grow">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-lg truncate">{product.title}</h3>
-                      <div className="flex items-center flex-shrink-0">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="ml-1 text-sm text-gray-600">4.5</span> {/* Static rating for now */}
-                      </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2 line-clamp-2">{product.description}</p>
+    
+                  <div className="mt-4 flex flex-col gap-2 flex-grow justify-end">
+                    <span className="font-bold text-lg text-green-600">${product.price.toFixed(2)}</span>
+                    <div className="flex flex-row gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-full flex-1 transition-all duration-200 hover:bg-green-600 hover:text-white"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAddToCart(product);
+                        }}
+                      >
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Add to Cart
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-full flex-1 transition-all duration-200 hover:bg-red-500 hover:text-white"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAddToWishlist(product);
+                        }}
+                      >
+                        <Heart className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <p className="text-sm text-gray-500 mt-2 line-clamp-2">{product.description}</p>
-                    <div className="mt-4 flex flex-col gap-2 flex-grow justify-end">
-                      <span className="font-bold text-lg">${product.price.toFixed(2)}</span>
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="rounded-full w-full sm:w-auto flex-1"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleAddToCart(product);
-                          }}
-                        >
-                          <ShoppingCart className="h-4 w-4 mr-2" />
-                          Add to Cart
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="rounded-full w-full sm:w-auto flex-1"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleAddToWishlist(product);
-                          }}
-                        >
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
           )}
           <div className="flex justify-center">
             <Link href="/products">

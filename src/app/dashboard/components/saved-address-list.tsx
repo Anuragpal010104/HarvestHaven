@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Edit, MapPin, Plus, Trash } from "lucide-react"
+import { db } from "@/lib/firebase"
+import { collection, getDocs, addDoc } from "firebase/firestore"
 
 // Define address type
 interface Address {
@@ -40,44 +42,40 @@ const useToast = () => {
   return { toast }
 }
 
+const fetchAddresses = async (setAddresses: React.Dispatch<React.SetStateAction<Address[]>>) => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "addresses"))
+    const fetchedAddresses = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: Number(doc.id), // Convert Firestore string id to number, or use a separate numeric id field if available
+        name: data.name || "",
+        address: data.address || "",
+        city: data.city || "",
+        state: data.state || "",
+        zipCode: data.zipCode || "",
+        country: data.country || "",
+        phone: data.phone || "",
+        isDefault: data.isDefault || false,
+      } as Address;
+    });
+    setAddresses(fetchedAddresses)
+  } catch (error) {
+    console.error("Error fetching addresses:", error)
+  }
+}
+
+const saveAddressToFirestore = async (address: Address) => {
+  try {
+    await addDoc(collection(db, "addresses"), address)
+  } catch (error) {
+    console.error("Error saving address:", error)
+  }
+}
+
 export function SavedAddressList() {
   const { toast } = useToast()
-  const [addresses, setAddresses] = useState<Address[]>([
-    {
-      id: 1,
-      name: "Home",
-      address: "123 Main Street, Apt 4B",
-      city: "Portland",
-      state: "OR",
-      zipCode: "97201",
-      country: "United States",
-      isDefault: true,
-      phone: "(555) 123-4567",
-    },
-    {
-      id: 2,
-      name: "Work",
-      address: "456 Business Ave, Suite 200",
-      city: "Portland",
-      state: "OR",
-      zipCode: "97204",
-      country: "United States",
-      isDefault: false,
-      phone: "(555) 987-6543",
-    },
-    {
-      id: 3,
-      name: "Parents",
-      address: "789 Family Lane",
-      city: "Eugene",
-      state: "OR",
-      zipCode: "97401",
-      country: "United States",
-      isDefault: false,
-      phone: "(555) 456-7890",
-    },
-  ])
-
+  const [addresses, setAddresses] = useState<Address[]>([])
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentAddress, setCurrentAddress] = useState<Address | null>(null)
@@ -93,7 +91,11 @@ export function SavedAddressList() {
     isDefault: false,
   })
 
-  const handleAddAddress = () => {
+  useEffect(() => {
+    fetchAddresses(setAddresses)
+  }, [])
+
+  const handleAddAddress = async () => {
     const addressToAdd: Address = {
       ...newAddress,
       id: addresses.length + 1,
@@ -105,6 +107,8 @@ export function SavedAddressList() {
       : [...addresses]
 
     setAddresses([...updatedAddresses, addressToAdd])
+    await saveAddressToFirestore(addressToAdd)
+
     setNewAddress({
       id: 0,
       name: "",
@@ -187,8 +191,29 @@ export function SavedAddressList() {
           <DialogContent className="sm:max-w-[550px]">
             <DialogHeader>
               <DialogTitle>Add New Address</DialogTitle>
-              <DialogDescription>Add a new delivery address to your account.</DialogDescription>
+              <DialogDescription>Use your current location or enter details manually.</DialogDescription>
             </DialogHeader>
+            <Button
+              onClick={() => {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                  const { latitude, longitude } = position.coords
+                  const response = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+                  )
+                  const data = await response.json()
+                  setNewAddress((prev) => ({
+                    ...prev,
+                    address: data.display_name || "",
+                    city: data.address.city || "",
+                    state: data.address.state || "",
+                    zipCode: data.address.postcode || "",
+                    country: data.address.country || "",
+                  }))
+                })
+              }}
+            >
+              Use Current Location
+            </Button>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
@@ -286,58 +311,62 @@ export function SavedAddressList() {
         </Dialog>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {addresses.map((address) => (
-          <Card key={address.id} className="relative">
-            {address.isDefault && <Badge className="absolute top-2 right-2 bg-green-600">Default</Badge>}
-            <CardContent className="p-6">
-              <div className="flex items-start mb-4">
-                <MapPin className="h-5 w-5 text-green-600 mr-2 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold">{address.name}</h4>
-                  <p className="text-sm text-gray-500">{address.phone}</p>
+      {addresses.length === 0 ? (
+        <p>No saved addresses found.</p>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {addresses.map((address) => (
+            <Card key={address.id} className="relative">
+              {address.isDefault && <Badge className="absolute top-2 right-2 bg-green-600">Default</Badge>}
+              <CardContent className="p-6">
+                <div className="flex items-start mb-4">
+                  <MapPin className="h-5 w-5 text-green-600 mr-2 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold">{address.name}</h4>
+                    <p className="text-sm text-gray-500">{address.phone}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-1 text-sm mb-4">
-                <p>{address.address}</p>
-                <p>
-                  {address.city}, {address.state} {address.zipCode}
-                </p>
-                <p>{address.country}</p>
-              </div>
-              <div className="flex justify-between">
-                <div className="space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setCurrentAddress(address)
-                      setIsEditDialogOpen(true)
-                    }}
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-                    onClick={() => handleDeleteAddress(address.id)}
-                  >
-                    <Trash className="h-4 w-4 mr-1" />
-                    Delete
-                  </Button>
+                <div className="space-y-1 text-sm mb-4">
+                  <p>{address.address}</p>
+                  <p>
+                    {address.city}, {address.state} {address.zipCode}
+                  </p>
+                  <p>{address.country}</p>
                 </div>
-                {!address.isDefault && (
-                  <Button variant="ghost" size="sm" onClick={() => handleSetDefault(address.id)}>
-                    Set as Default
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                <div className="flex justify-between">
+                  <div className="space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setCurrentAddress(address)
+                        setIsEditDialogOpen(true)
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                      onClick={() => handleDeleteAddress(address.id)}
+                    >
+                      <Trash className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
+                  {!address.isDefault && (
+                    <Button variant="ghost" size="sm" onClick={() => handleSetDefault(address.id)}>
+                      Set as Default
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {currentAddress && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

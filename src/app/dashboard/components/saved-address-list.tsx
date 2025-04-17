@@ -18,7 +18,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Edit, MapPin, Plus, Trash } from "lucide-react"
 import { db } from "@/lib/firebase"
-import { collection, getDocs, addDoc } from "firebase/firestore"
+import { collection, getDocs, addDoc, query, where } from "firebase/firestore"
+import { useAuth } from "@/lib/AuthContext"
 
 // Define address type
 interface Address {
@@ -31,6 +32,7 @@ interface Address {
   country: string
   isDefault: boolean
   phone: string
+  userId: string
 }
 
 // Simple custom toast hook
@@ -40,29 +42,6 @@ const useToast = () => {
     // You could replace this with a proper toast notification system
   }
   return { toast }
-}
-
-const fetchAddresses = async (setAddresses: React.Dispatch<React.SetStateAction<Address[]>>) => {
-  try {
-    const querySnapshot = await getDocs(collection(db, "addresses"))
-    const fetchedAddresses = querySnapshot.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        id: Number(doc.id), // Convert Firestore string id to number, or use a separate numeric id field if available
-        name: data.name || "",
-        address: data.address || "",
-        city: data.city || "",
-        state: data.state || "",
-        zipCode: data.zipCode || "",
-        country: data.country || "",
-        phone: data.phone || "",
-        isDefault: data.isDefault || false,
-      } as Address;
-    });
-    setAddresses(fetchedAddresses)
-  } catch (error) {
-    console.error("Error fetching addresses:", error)
-  }
 }
 
 const saveAddressToFirestore = async (address: Address) => {
@@ -75,6 +54,7 @@ const saveAddressToFirestore = async (address: Address) => {
 
 export function SavedAddressList() {
   const { toast } = useToast()
+  const { user, loading } = useAuth()
   const [addresses, setAddresses] = useState<Address[]>([])
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -89,16 +69,44 @@ export function SavedAddressList() {
     country: "United States",
     phone: "",
     isDefault: false,
+    userId: "",
   })
 
   useEffect(() => {
-    fetchAddresses(setAddresses)
-  }, [])
+    if (!user) return;
+    const fetchAddresses = async () => {
+      try {
+        const q = query(collection(db, "addresses"), where("userId", "==", user.uid));
+        const querySnapshot = await getDocs(q);
+        const fetchedAddresses = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: Number(doc.id), // Convert Firestore string id to number, or use a separate numeric id field if available
+            name: data.name || "",
+            address: data.address || "",
+            city: data.city || "",
+            state: data.state || "",
+            zipCode: data.zipCode || "",
+            country: data.country || "",
+            phone: data.phone || "",
+            isDefault: data.isDefault || false,
+            userId: data.userId,
+          } as Address;
+        });
+        setAddresses(fetchedAddresses);
+      } catch (error) {
+        console.error("Error fetching addresses:", error);
+      }
+    };
+    fetchAddresses();
+  }, [user]);
 
   const handleAddAddress = async () => {
+    if (!user) return;
     const addressToAdd: Address = {
       ...newAddress,
       id: addresses.length + 1,
+      userId: user.uid,
       isDefault: newAddress.isDefault || addresses.length === 0,
     }
 
@@ -119,6 +127,7 @@ export function SavedAddressList() {
       country: "United States",
       phone: "",
       isDefault: false,
+      userId: "",
     })
     setIsAddDialogOpen(false)
 
@@ -193,27 +202,106 @@ export function SavedAddressList() {
               <DialogTitle>Add New Address</DialogTitle>
               <DialogDescription>Use your current location or enter details manually.</DialogDescription>
             </DialogHeader>
-            <Button
+            {/* <Button
               onClick={() => {
-                navigator.geolocation.getCurrentPosition(async (position) => {
-                  const { latitude, longitude } = position.coords
-                  const response = await fetch(
-                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-                  )
-                  const data = await response.json()
-                  setNewAddress((prev) => ({
-                    ...prev,
-                    address: data.display_name || "",
-                    city: data.address.city || "",
-                    state: data.address.state || "",
-                    zipCode: data.address.postcode || "",
-                    country: data.address.country || "",
-                  }))
-                })
+                if (!navigator.geolocation) {
+                  toast({ title: "Error", description: "Geolocation is not supported by your browser." });
+                  return;
+                }
+                toast({ title: "Fetching location...", description: "Please wait while we get your current location." });
+                navigator.geolocation.getCurrentPosition(
+                  async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    try {
+                      const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+                      );
+                      const data = await response.json();
+                      setNewAddress((prev) => ({
+                        ...prev,
+                        address: data.display_name || "",
+                        city: data.address?.city || data.address?.town || data.address?.village || "",
+                        state: data.address?.state || "",
+                        zipCode: data.address?.postcode || "",
+                        country: data.address?.country || "",
+                      }));
+                      toast({ title: "Location found", description: "Address fields have been filled." });
+                    } catch (err) {
+                      toast({ title: "Error", description: "Failed to fetch address from location." });
+                    }
+                  },
+                  (error) => {
+                    toast({ title: "Error", description: "Unable to retrieve your location." });
+                  }
+                );
               }}
             >
               Use Current Location
-            </Button>
+            </Button> */}
+            <Button
+  onClick={async () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Error",
+        description: "Geolocation is not supported by your browser.",
+      });
+      return;
+    }
+
+    toast({
+      title: "Fetching location...",
+      description: "Please wait while we get your current location.",
+    });
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+            {
+              headers: {
+                'User-Agent': 'your-app-name', // Required by Nominatim
+              },
+            }
+          );
+          const data = await response.json();
+          console.log(data);
+
+          setNewAddress((prev) => ({
+            ...prev,
+            address: data.display_name || "",
+            city: data.address?.city || data.address?.town || data.address?.village || "",
+            state: data.address?.state || "",
+            zipCode: data.address?.postcode || "",
+            country: data.address?.country || "",
+          }));
+
+          toast({
+            title: "Location found",
+            description: "Address fields have been filled.",
+          });
+        } catch (err) {
+          console.error(err);
+          toast({
+            title: "Error",
+            description: "Failed to fetch address from location.",
+          });
+        }
+      },
+      (error) => {
+        console.error(error);
+        toast({
+          title: "Error",
+          description: "Unable to retrieve your location.",
+        });
+      }
+    );
+  }}
+>
+  Use Current Location
+</Button>
+
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">

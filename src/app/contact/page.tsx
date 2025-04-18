@@ -238,12 +238,12 @@ const faqs = [
   {
     question: "How do I track my order?",
     answer:
-      "You can track your order by logging into your account and visiting the 'My Orders' section. There you\'ll find tracking information for all your recent purchases.",
+      "You can track your order by logging into your account and visiting the &apos;My Orders&apos; section. There you&apos;ll find tracking information for all your recent purchases.",
   },
   {
     question: "What is your return policy?",
     answer:
-      "We offer a 30-day return policy for most items. If you\'re not satisfied with your purchase, you can return it within 30 days for a full refund or exchange.",
+      "We offer a 30-day return policy for most items. If you&apos;re not satisfied with your purchase, you can return it within 30 days for a full refund or exchange.",
   },
   {
     question: "Are all your products certified organic?",
@@ -253,7 +253,7 @@ const faqs = [
   {
     question: "How can I become a seller on OrganicMarket?",
     answer:
-      "To become a seller, visit our 'Seller Registration' page and complete the application form. Our team will review your application and get back to you within 3-5 business days.",
+      "To become a seller, visit our &apos;Seller Registration&apos; page and complete the application form. Our team will review your application and get back to you within 3-5 business days.",
   },
 ]
 

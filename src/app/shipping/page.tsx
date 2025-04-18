@@ -84,7 +84,7 @@ export default function ShippingPage() {
                     <div>
                       <h4 className="font-semibold">Order Processing</h4>
                       <p className="text-sm text-gray-500">
-                        Orders are typically processed within 1-2 business days. Once your order ships, you'll receive a confirmation email with tracking information.
+                        Orders are typically processed within 1-2 business days. Once your order ships, you&apos;ll receive a confirmation email with tracking information.
                       </p>
                     </div>
                   </div>
@@ -107,7 +107,7 @@ export default function ShippingPage() {
               <CardContent className="p-6 space-y-4">
                 <h3 className="text-xl font-bold">International Shipping</h3>
                 <p className="text-gray-500">
-                  Currently, we only ship within the United States. We're working on expanding our shipping options to international locations in the future. We appreciate your patience and understanding.
+                  Currently, we only ship within the United States. We&apos;re working on expanding our shipping options to international locations in the future. We appreciate your patience and understanding.
                 </p>
                 <div className="space-y-4 mt-4">
                   <div className="flex items-start gap-3">
@@ -124,7 +124,7 @@ export default function ShippingPage() {
                     <div>
                       <h4 className="font-semibold">International Orders</h4>
                       <p className="text-sm text-gray-500">
-                        If you're interested in placing a large international order, please contact our customer service team to discuss special shipping arrangements.
+                        If you&apos;re interested in placing a large international order, please contact our customer service team to discuss special shipping arrangements.
                       </p>
                     </div>
                   </div>
@@ -182,7 +182,7 @@ export default function ShippingPage() {
           <CardContent className="p-6 space-y-4">
             <h3 className="text-xl font-bold">How to Track Your Order</h3>
             <p className="text-gray-500">
-              Once your order ships, you'll receive a confirmation email with tracking information. You can also track your order through your account on our website.
+              Once your order ships, you&apos;ll receive a confirmation email with tracking information. You can also track your order through your account on our website.
             </p>
             <div className="space-y-4 mt-4">
               <div className="flex items-start gap-3">
@@ -199,7 +199,7 @@ export default function ShippingPage() {
                 <div>
                   <h4 className="font-semibold">Track via Email</h4>
                   <p className="text-sm text-gray-500">
-                    Click the tracking link in your shipping confirmation email to be directed to the carrier's tracking page.
+                    Click the tracking link in your shipping confirmation email to be directed to the carrier&apos;s tracking page.
                   </p>
                 </div>
               </div>
@@ -208,7 +208,7 @@ export default function ShippingPage() {
                 <div>
                   <h4 className="font-semibold">Delivery Updates</h4>
                   <p className="text-sm text-gray-500">
-                    You'll receive email notifications about important updates to your delivery status, including when your order is out for delivery.
+                    You&apos;ll receive email notifications about important updates to your delivery status, including when your order is out for delivery.
                   </p>
                 </div>
               </div>
@@ -262,7 +262,7 @@ const shippingOptions = [
 const shippingFaqs = [
   {
     question: "When will my order ship?",
-    answer: "Orders are typically processed within 1-2 business days. Once your order ships, you'll receive a confirmation email with tracking information."
+    answer: "Orders are typically processed within 1-2 business days. Once your order ships, you&apos;ll receive a confirmation email with tracking information."
   },
   {
     question: "Can I change my shipping address after placing an order?",
@@ -274,7 +274,7 @@ const shippingFaqs = [
   },
   {
     question: "What if my package is lost or damaged?",
-    answer: "If your package is lost or damaged during transit, please contact our customer service team within 48 hours of the expected delivery date. We'll work with the carrier to resolve the issue."
+    answer: "If your package is lost or damaged during transit, please contact our customer service team within 48 hours of the expected delivery date. We&apos;ll work with the carrier to resolve the issue."
   },
   {
     question: "How are perishable items shipped?",

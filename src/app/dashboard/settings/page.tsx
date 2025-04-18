@@ -69,19 +69,11 @@ export default function SettingsPage() {
     })
   }
 
-  const handleNotificationChange = (key: string, value: any) => {
-    setNotifications({
-      ...notifications,
-      [key]: value,
-    })
-
-    // toast({
-    //   title: "Notification preferences updated",
-    //   description: "Your notification preferences have been saved.",
-    // })
+  const handleNotificationChange = (type: keyof typeof notifications, checked: boolean) => {
+    setNotifications((prev) => ({ ...prev, [type]: checked }));
   }
 
-  const handlePrivacyChange = (key: string, value: any) => {
+  const handlePrivacyChange = (key: keyof typeof privacy, value: boolean) => {
     setPrivacy({
       ...privacy,
       [key]: value,
@@ -206,7 +198,7 @@ export default function SettingsPage() {
                     <Switch
                       id="email-notifications"
                       checked={notifications.email}
-                      onCheckedChange={(checked: any) => handleNotificationChange("email", checked)}
+                      onCheckedChange={(checked: boolean) => handleNotificationChange("email", checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -217,7 +209,7 @@ export default function SettingsPage() {
                     <Switch
                       id="sms-notifications"
                       checked={notifications.sms}
-                      onCheckedChange={(checked: any) => handleNotificationChange("sms", checked)}
+                      onCheckedChange={(checked: boolean) => handleNotificationChange("sms", checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -228,7 +220,7 @@ export default function SettingsPage() {
                     <Switch
                       id="browser-notifications"
                       checked={notifications.browser}
-                      onCheckedChange={(checked: any) => handleNotificationChange("browser", checked)}
+                      onCheckedChange={(checked: boolean) => handleNotificationChange("browser", checked)}
                     />
                   </div>
                 </div>
@@ -243,7 +235,7 @@ export default function SettingsPage() {
                     <Switch
                       id="order-updates"
                       checked={notifications.orderUpdates}
-                      onCheckedChange={(checked: any) => handleNotificationChange("orderUpdates", checked)}
+                      onCheckedChange={(checked: boolean) => handleNotificationChange("orderUpdates", checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -256,7 +248,7 @@ export default function SettingsPage() {
                     <Switch
                       id="promotions"
                       checked={notifications.promotions}
-                      onCheckedChange={(checked: any) => handleNotificationChange("promotions", checked)}
+                      onCheckedChange={(checked: boolean) => handleNotificationChange("promotions", checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -267,7 +259,7 @@ export default function SettingsPage() {
                     <Switch
                       id="newsletter"
                       checked={notifications.newsletter}
-                      onCheckedChange={(checked: any) => handleNotificationChange("newsletter", checked)}
+                      onCheckedChange={(checked: boolean) => handleNotificationChange("newsletter", checked)}
                     />
                   </div>
                 </div>
@@ -293,7 +285,7 @@ export default function SettingsPage() {
                     <Switch
                       id="share-data"
                       checked={privacy.shareData}
-                      onCheckedChange={(checked: any) => handlePrivacyChange("shareData", checked)}
+                      onCheckedChange={(checked: boolean) => handlePrivacyChange("shareData", checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -306,7 +298,7 @@ export default function SettingsPage() {
                     <Switch
                       id="save-history"
                       checked={privacy.saveHistory}
-                      onCheckedChange={(checked: any) => handlePrivacyChange("saveHistory", checked)}
+                      onCheckedChange={(checked: boolean) => handlePrivacyChange("saveHistory", checked)}
                     />
                   </div>
                 </div>

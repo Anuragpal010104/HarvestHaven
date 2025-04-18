@@ -206,7 +206,7 @@ export default function Home() {
       <div className="space-y-2">
         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Why Choose Us</h2>
         <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-          We're committed to providing the highest quality organic products.
+          We&apos;re committed to providing the highest quality organic products.
         </p>
       </div>
     </div>

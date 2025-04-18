@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowLeftRight, CheckCircle2, Package, ShieldCheck } from "lucide-react"

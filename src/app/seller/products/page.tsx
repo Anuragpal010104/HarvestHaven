@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -9,13 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit, Plus, Trash } from "lucide-react";
+import {  Plus, Trash } from "lucide-react";
 import { SellerLayout } from "@/app/seller/seller-layout";
 import { addProduct, getProductsBySeller, deleteProduct, Product } from "@/lib/db";
 import { useAuth } from "@/lib/AuthContext";
+import Image from "next/image";
 
 export default function SellerProducts() {
-  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
@@ -67,7 +66,7 @@ export default function SellerProducts() {
         category: newProduct.category,
       };
 
-      const newProductId = await addProduct(productToAdd, newProduct.image || undefined);
+      await addProduct(productToAdd, newProduct.image || undefined);
       
       const updatedProducts = await getProductsBySeller(user.uid);
       setProducts(updatedProducts);
@@ -102,10 +101,6 @@ export default function SellerProducts() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
   };
 
   if (authLoading) {
@@ -218,7 +213,7 @@ export default function SellerProducts() {
               </CardHeader>
               <CardContent>
                 {product.imageBase64 && (
-                  <img 
+                  <Image 
                     src={product.imageBase64} 
                     alt={product.title} 
                     className="w-full h-48 object-cover rounded-md mb-4"

@@ -46,10 +46,11 @@ export default function ProductsPage() {
         description: `1 × ${product.title} added to cart.`,
         icon: "🛒",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error adding to cart:", error);
+      const message = error instanceof Error ? error.message : "Something went wrong.";
       toast.error("Failed to Add", {
-        description: error.message || "Something went wrong.",
+        description: message,
         icon: "⚠️",
       });
     }
@@ -70,10 +71,11 @@ export default function ProductsPage() {
         description: `${product.title} added to your wishlist.`,
         icon: "💖",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error adding to wishlist:", error);
+      const message = error instanceof Error ? error.message : "Something went wrong.";
       toast.error("Failed to Add", {
-        description: error.message || "Something went wrong.",
+        description: message,
         icon: "⚠️",
       });
     }

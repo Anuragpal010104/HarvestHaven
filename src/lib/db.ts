@@ -200,7 +200,7 @@ export const addToCart = async (userId: string, product: Product): Promise<void>
   }
 };
 
-// Wishlist functions
+// Add to wishlist
 export const addToWishlist = async (userId: string, productId: string): Promise<void> => {
   try {
     const buyerProfileRef = doc(db, "buyerProfiles", userId);
@@ -213,6 +213,7 @@ export const addToWishlist = async (userId: string, productId: string): Promise<
   }
 };
 
+// Wishlist functions
 export const removeFromWishlist = async (userId: string, productId: string): Promise<void> => {
   try {
     const buyerProfileRef = doc(db, "buyerProfiles", userId);

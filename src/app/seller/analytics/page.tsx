@@ -133,7 +133,7 @@ export default function AnalyticsPage() {
                     showXAxis={true}
                     showYAxis={true}
                     showGridLines={true}
-                    valueFormatter={(value: any) => `$${value}`}
+                    valueFormatter={(value: number) => `$${value}`}
                   />
                 </CardContent>
               </Card>
@@ -150,7 +150,7 @@ export default function AnalyticsPage() {
                       { name: "Pantry Items", value: 30 },
                       { name: "Other", value: 10 },
                     ]}
-                    valueFormatter={(value: any) => `${value}%`}
+                    valueFormatter={(value: number) => `${value}%`}
                     height={300}
                     className="mt-4"
                     showTooltip={true}
@@ -183,7 +183,7 @@ export default function AnalyticsPage() {
                     showXAxis={true}
                     showYAxis={true}
                     showGridLines={true}
-                    valueFormatter={(value: any) => `$${value}`}
+                    valueFormatter={(value: number) => `$${value}`}
                     layout="vertical"
                   />
                 </CardContent>

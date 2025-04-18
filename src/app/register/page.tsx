@@ -2,88 +2,20 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { auth, db } from "@/lib/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
+import { FirebaseError } from "firebase/app";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-
-  // const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   setIsLoading(true);
-
-  //   const formData = new FormData(e.currentTarget);
-  //   const firstName = formData.get("first-name") as string;
-  //   const lastName = formData.get("last-name") as string;
-  //   const email = formData.get("email") as string;
-  //   const password = formData.get("password") as string;
-
-  //   if (!firstName || !lastName || !email || !password) {
-  //     toast.error("Registration failed", { description: "All fields are required." });
-  //     setIsLoading(false);
-  //     return;
-  //   }
-  //   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-  //     toast.error("Registration failed", { description: "Invalid email format." });
-  //     setIsLoading(false);
-  //     return;
-  //   }
-
-  //   try {
-  //     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  //     console.log("User created:", userCredential.user.uid);
-
-  //     const userData = {
-  //       firstName,
-  //       lastName,
-  //       email,
-  //       role: "buyer",
-  //       createdAt: new Date().toISOString(),
-  //       updatedAt: new Date().toISOString(),
-  //     };
-  //     console.log("Writing to Firestore (users):", userData);
-
-  //     // Create users document
-  //     await setDoc(doc(db, "users", userCredential.user.uid), userData);
-  //     console.log("Firestore write successful (users)");
-
-  //     // Create buyerProfiles document
-  //     const buyerProfileData = {
-  //       shippingAddresses: [],
-  //       wishlist: [],
-  //     };
-  //     console.log("Writing to Firestore (buyerProfiles):", buyerProfileData);
-  //     await setDoc(doc(db, "buyerProfiles", userCredential.user.uid), buyerProfileData);
-  //     console.log("Firestore write successful (buyerProfiles)");
-
-  //     toast("Registration successful", { description: "Welcome to OrganicMarket!" });
-  //     router.push("/");
-  //   } catch (error: any) {
-  //     let message = error.message;
-  //     if (error.code === "permission-denied") {
-  //       message = "Permission denied. Check Firestore security rules.";
-  //     } else if (error.code === "invalid-argument") {
-  //       message = "Invalid data sent to Firestore.";
-  //     } else if (error.code === "unauthenticated") {
-  //       message = "User not authenticated.";
-  //     } else if (error.code === "auth/email-already-in-use") {
-  //       message = "This email is already registered.";
-  //     }
-  //     console.error("Error details:", error);
-  //     toast.error("Registration failed", { description: message });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -137,19 +69,23 @@ export default function RegisterPage() {
       setTimeout(() => {
         router.push("/");
       }, 1000); // Small delay for toast visibility
-    } catch (error: any) {
-      let message = "An error occurred. Please try again.";
-  
-      if (error.code === "auth/email-already-in-use") {
-        message = "This email is already registered.";
-      } else if (error.code === "permission-denied") {
-        message = "Permission denied. Check Firestore security rules.";
-      } else if (error.code === "invalid-argument") {
-        message = "Invalid data sent to Firestore.";
-      } else if (error.code === "unauthenticated") {
-        message = "User not authenticated.";
+    } catch (error: unknown) {
+      let message = "Registration failed. Please try again.";
+      if (error instanceof FirebaseError) {
+        if (error.code === "auth/email-already-in-use") {
+          message = "This email is already registered.";
+        } else if (error.code === "permission-denied") {
+          message = "Permission denied. Check Firestore security rules.";
+        } else if (error.code === "invalid-argument") {
+          message = "Invalid data sent to Firestore.";
+        } else if (error.code === "unauthenticated") {
+          message = "User not authenticated.";
+        } else {
+          message = error.message;
+        }
+      } else if (error instanceof Error) {
+        message = error.message;
       }
-  
       console.error("Error details:", error);
       toast.error("Registration failed", { description: message });
     } finally {

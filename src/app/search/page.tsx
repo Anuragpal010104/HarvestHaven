@@ -170,7 +170,7 @@ export default function SearchPage() {
       setSearchResults(results)
       setIsLoading(false)
     }, 500)
-  }, [query, sortBy, priceRange, category])
+  }, [query, sortBy, priceRange, category, allProducts])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -186,7 +186,7 @@ export default function SearchPage() {
       <div className="flex flex-col items-center justify-center space-y-4 text-center mb-8">
         <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">Search Results</h1>
         <p className="max-w-[600px] text-gray-500">
-          {query ? `Showing results for "${query}"` : "Browse our organic products"}
+          {query ? `Showing results for &quot;${query}&quot;` : "Browse our organic products"}
         </p>
         <form onSubmit={handleSearch} className="w-full max-w-md relative">
           <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -270,7 +270,7 @@ export default function SearchPage() {
           ) : searchResults.length === 0 ? (
             <div className="text-center py-12">
               <h2 className="text-xl font-semibold mb-2">No products found</h2>
-              <p className="text-gray-500 mb-6">We couldn't find any products matching your search criteria.</p>
+              <p className="text-gray-500 mb-6">We couldn&apos;t find any products matching your search criteria.</p>
               <Button asChild>
                 <Link href="/products">Browse All Products</Link>
               </Button>

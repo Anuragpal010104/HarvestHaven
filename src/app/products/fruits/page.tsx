@@ -45,7 +45,7 @@ export default function FruitsVegetablesPage() {
         description: `1 × ${product.title} added to cart.`,
         icon: "🛒",
       });
-    } catch (error: unknown) { // Use unknown instead of any
+    } catch (error: unknown) {
       console.error("Error adding to cart:", error);
       let message = "Something went wrong.";
       if (error instanceof Error) {
@@ -75,7 +75,7 @@ export default function FruitsVegetablesPage() {
         description: `${product.title} added to your wishlist.`,
         icon: "💖",
       });
-    } catch (error: unknown) { // Use unknown instead of any
+    } catch (error: unknown) {
       console.error("Error adding to wishlist:", error);
       let message = "Something went wrong.";
       if (error instanceof Error) {

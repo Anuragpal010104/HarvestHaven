@@ -45,10 +45,10 @@ export default function PantryItemsPage() {
         description: `1 × ${product.title} added to cart.`,
         icon: "🛒",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error adding to cart:", error);
       toast.error("Failed to Add", {
-        description: error.message || "Something went wrong.",
+        description: (error instanceof Error ? error.message : "Something went wrong."),
         icon: "⚠️",
       });
     }
@@ -69,10 +69,10 @@ export default function PantryItemsPage() {
         description: `${product.title} added to your wishlist.`,
         icon: "💖",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error adding to wishlist:", error);
       toast.error("Failed to Add", {
-        description: error.message || "Something went wrong.",
+        description: (error instanceof Error ? error.message : "Something went wrong."),
         icon: "⚠️",
       });
     }

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { Leaf } from "lucide-react"
 import { auth } from "@/lib/firebase"
+import { FirebaseError } from "firebase/app"
 import { signInWithEmailAndPassword } from "firebase/auth"
 
 export default function SellerLoginPage() {
@@ -27,14 +28,17 @@ export default function SellerLoginPage() {
       await signInWithEmailAndPassword(auth, email, password)
       toast.success("Seller login successful", { description: "Welcome to your seller dashboard!" })
       router.push("/seller/dashboard")
-    } catch (error: any) {
-      let message = error.message
-      if (error.code === "auth/wrong-password") {
-        message = "Incorrect password."
-      } else if (error.code === "auth/user-not-found") {
-        message = "No seller found with this email."
-      } else if (error.code === "auth/invalid-email") {
-        message = "Invalid email format."
+    } catch (error: unknown) {
+      let message = "An unexpected error occurred."
+      if (error instanceof FirebaseError) {
+        message = error.message
+        if (error.code === "auth/wrong-password") {
+          message = "Incorrect password."
+        } else if (error.code === "auth/user-not-found") {
+          message = "No seller found with this email."
+        } else if (error.code === "auth/invalid-email") {
+          message = "Invalid email format."
+        }
       }
       toast.error("Login failed", { description: message })
     } finally {
@@ -92,7 +96,7 @@ export default function SellerLoginPage() {
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-sm text-center text-gray-500">
-            Don't have a seller account?{" "}
+            Don&apos;t have a seller account?{" "}
             <Link href="/seller/register" className="text-green-600 hover:underline">
               Register as a seller
             </Link>

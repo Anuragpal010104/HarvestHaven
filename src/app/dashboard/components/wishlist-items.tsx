@@ -8,7 +8,7 @@ import { ShoppingCart, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { Product, getWishlistItems, removeFromWishlist } from "@/lib/db";
 import { toast } from "sonner";
-import { auth, db } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 
 export function WishlistItems() {

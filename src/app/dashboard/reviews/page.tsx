@@ -162,13 +162,13 @@ export default function UserReviewsPage() {
           <TabsContent value="my-reviews" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Reviews You've Written</CardTitle>
+                <CardTitle>Reviews You&apos;ve Written</CardTitle>
                 <CardDescription>Manage your product reviews</CardDescription>
               </CardHeader>
               <CardContent>
                 {myReviews.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">You haven't written any reviews yet.</p>
+                    <p className="text-gray-500 mb-4">You haven&apos;t written any reviews yet.</p>
                     <Button onClick={() => setActiveTab("pending-reviews")} className="bg-green-600 hover:bg-green-700">
                       Review Your Purchases
                     </Button>
@@ -251,13 +251,13 @@ export default function UserReviewsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Products to Review</CardTitle>
-                <CardDescription>Share your thoughts on products you've purchased</CardDescription>
+                <CardDescription>Share your thoughts on products you&apos;ve purchased</CardDescription>
               </CardHeader>
               <CardContent>
                 {pendingReviews.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-gray-500">
-                      You've reviewed all your purchases. Check back after your next order!
+                      You&apos;ve reviewed all your purchases. Check back after your next order!
                     </p>
                   </div>
                 ) : (

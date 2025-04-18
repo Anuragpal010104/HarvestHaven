@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, Heart, MapPin, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { UserLayout } from "@/app/dashboard/user-layout";
 import { RecentOrdersList } from "@/app/dashboard/components/recent-orders-list";
 import { useAuth } from "@/lib/AuthContext";

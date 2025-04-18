@@ -65,7 +65,7 @@ export default function ContactPage() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl">Contact Us</h1>
           <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-            Have questions or feedback? We\'d love to hear from you.
+            Have questions or feedback? We&apos;d love to hear from you.
           </p>
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold">Email</h3>
-                  <p className="text-sm text-gray-500">We\'ll respond within 24 hours</p>
+                  <p className="text-sm text-gray-500">We&apos;ll respond within 24 hours</p>
                   <p className="text-green-600 font-medium mt-1">support@organicmarket.com</p>
                 </div>
               </CardContent>

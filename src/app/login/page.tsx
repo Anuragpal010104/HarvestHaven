@@ -28,12 +28,15 @@ export default function LoginPage() {
       router.push("/dashboard")
     } catch (error: unknown) {
       let message = "An error occurred. Please try again.";
-      if (error && typeof error === "object") {
-        if ("message" in error && typeof (error as any).message === "string") {
-          message = (error as any).message;
-        } else if ("code" in error && typeof (error as any).code === "string") {
-          message = (error as any).code;
+      if (error instanceof Error) {
+        // Firebase errors often have a 'code' property
+        if ('code' in error && typeof (error as { code?: string }).code === 'string') {
+          message = (error as { code: string }).code;
+        } else {
+          message = error.message;
         }
+      } else if (typeof error === 'string') {
+        message = error;
       }
       toast.error("Login failed", { description: message })
     } finally {

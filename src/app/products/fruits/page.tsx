@@ -45,10 +45,16 @@ export default function FruitsVegetablesPage() {
         description: `1 × ${product.title} added to cart.`,
         icon: "🛒",
       });
-    } catch (error: any) {
+    } catch (error: unknown) { // Use unknown instead of any
       console.error("Error adding to cart:", error);
+      let message = "Something went wrong.";
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === 'string') {
+        message = error;
+      }
       toast.error("Failed to Add", {
-        description: error.message || "Something went wrong.",
+        description: message,
         icon: "⚠️",
       });
     }
@@ -69,10 +75,16 @@ export default function FruitsVegetablesPage() {
         description: `${product.title} added to your wishlist.`,
         icon: "💖",
       });
-    } catch (error: any) {
+    } catch (error: unknown) { // Use unknown instead of any
       console.error("Error adding to wishlist:", error);
+      let message = "Something went wrong.";
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === 'string') {
+        message = error;
+      }
       toast.error("Failed to Add", {
-        description: error.message || "Something went wrong.",
+        description: message,
         icon: "⚠️",
       });
     }

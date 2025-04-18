@@ -5,7 +5,6 @@ import { use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { ChevronLeft, Minus, Plus, ShoppingCart, Star } from "lucide-react";
@@ -63,8 +62,15 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
       if (cartSnap.exists()) {
         const existingItems = cartSnap.data().items || [];
+        interface CartItem {
+          productId: string;
+          name: string;
+          price: number;
+          quantity: number;
+          image: string;
+        }
         const existingItemIndex = existingItems.findIndex(
-          (item: any) => item.productId === cartItem.productId
+          (item: CartItem) => item.productId === cartItem.productId
         );
 
         if (existingItemIndex >= 0) {
@@ -84,32 +90,19 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       toast.success("Added to cart", {
         description: `${quantity} × ${product.title} added to your cart.`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error adding to cart:", error);
+      let message = "Something went wrong.";
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === 'string') {
+        message = error;
+      }
       toast.error("Failed to add to cart", {
-        description: error.message || "Something went wrong.",
+        description: message,
       });
     }
   };
-
-  const handleAddToWishlist = async (product: Product) => {
-    if (!user) {
-      toast.error("Please log in", {
-        description: "You need to be logged in to add items to your wishlist.",
-      });
-      return;
-    }
-
-    try {
-      await addToWishlist(user.uid, product.id);
-      toast.success("Added to wishlist", {
-        description: `${product.title} has been added to your wishlist.`,
-      });
-    } catch (error) {
-      console.error("Error adding to wishlist:", error);
-      toast.error("Failed to add to wishlist");
-    }
-  }
 
   if (loading) {
     return <div className="container px-4 py-12 text-center">Loading product...</div>;

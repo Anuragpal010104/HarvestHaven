@@ -26,8 +26,16 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password)
       toast.success("Login successful", { description: "Welcome back to OrganicMarket!" })
       router.push("/dashboard")
-    } catch (error: any) {
-      toast.error("Login failed", { description: error.message })
+    } catch (error: unknown) {
+      let message = "An error occurred. Please try again.";
+      if (error && typeof error === "object") {
+        if ("message" in error && typeof (error as any).message === "string") {
+          message = (error as any).message;
+        } else if ("code" in error && typeof (error as any).code === "string") {
+          message = (error as any).code;
+        }
+      }
+      toast.error("Login failed", { description: message })
     } finally {
       setIsLoading(false)
     }

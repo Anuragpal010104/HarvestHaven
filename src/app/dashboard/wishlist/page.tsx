@@ -15,10 +15,11 @@ export default function WishlistPage() {
         <Card>
           <CardHeader>
             <CardTitle>Saved Items</CardTitle>
-            <CardDescription>Products you've saved for later</CardDescription>
+            <CardDescription>Products you&apos;ve saved for later</CardDescription>
           </CardHeader>
           <CardContent>
             <WishlistItems />
+            <p className="text-gray-500 text-center mt-8">You haven&apos;t added any items to your wishlist yet.</p>
           </CardContent>
         </Card>
       </div>

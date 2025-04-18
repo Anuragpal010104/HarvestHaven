@@ -22,7 +22,7 @@ export default function Home() {
         const fetchedProducts = await getAllProducts();
         // Show only first 3 products as featured (or you could add a 'featured' field in Firestore)
         setProducts(fetchedProducts.slice(0, 3));
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Error fetching products:", error);
         toast.error("Failed to load featured products");
       } finally {
@@ -45,10 +45,10 @@ export default function Home() {
       toast.success("Added to cart", {
         description: `1 × ${product.title} added to your cart.`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error adding to cart:", error);
       toast.error("Failed to add to cart", {
-        description: error.message || "Something went wrong.",
+        description: "Something went wrong.",
       });
     }
   };
@@ -66,10 +66,10 @@ export default function Home() {
       toast.success("Added to wishlist", {
         description: `${product.title} has been added to your wishlist.`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error adding to wishlist:", error);
       toast.error("Failed to add to wishlist", {
-        description: error.message || "Something went wrong.",
+        description: "Something went wrong.",
       });
     }
   };

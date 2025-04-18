@@ -117,7 +117,7 @@ export default function HelpCenterPage() {
       <div className="bg-green-50 rounded-lg p-8 md:p-12 text-center">
         <h2 className="text-2xl font-bold mb-4">Still Need Help?</h2>
         <p className="text-gray-500 max-w-2xl mx-auto mb-6">
-          Can't find what you're looking for? Our customer support team is here to help.
+          Can&apos;t find what you&apos;re looking for? Our customer support team is here to help.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button className="bg-green-600 hover:bg-green-700">Contact Support</Button>

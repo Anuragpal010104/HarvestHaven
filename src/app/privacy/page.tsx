@@ -50,7 +50,7 @@ export default function PrivacyPolicyPage() {
               <CardContent className="p-6 space-y-4">
                 <h3 className="text-xl font-bold">Information We Collect</h3>
                 <p className="text-gray-500">
-                  We collect various types of information to provide and improve our services to you. Here's what we
+                  We collect various types of information to provide and improve our services to you. Here&apos;s what we
                   collect:
                 </p>
                 <div className="space-y-4 mt-4">
@@ -79,7 +79,7 @@ export default function PrivacyPolicyPage() {
                     <div>
                       <h4 className="font-semibold">Order History</h4>
                       <p className="text-sm text-gray-500">
-                        We maintain records of your purchase history, including the products you've bought, when you
+                        We maintain records of your purchase history, including the products you&apos;ve bought, when you
                         bought them, and how much you paid.
                       </p>
                     </div>
@@ -260,7 +260,7 @@ export default function PrivacyPolicyPage() {
                     <div>
                       <h4 className="font-semibold">Marketing Communications</h4>
                       <p className="text-sm text-gray-500">
-                        You can opt out of receiving marketing communications from us by clicking the "unsubscribe" link
+                        You can opt out of receiving marketing communications from us by clicking the &quot;unsubscribe&quot; link
                         in any marketing email we send you or by contacting our customer service team.
                       </p>
                     </div>
@@ -281,8 +281,8 @@ export default function PrivacyPolicyPage() {
                     <div>
                       <h4 className="font-semibold">Do Not Track</h4>
                       <p className="text-sm text-gray-500">
-                        Some browsers have a "Do Not Track" feature that lets you tell websites that you do not want to
-                        have your online activities tracked. We currently do not respond to "Do Not Track" signals.
+                        Some browsers have a &quot;Do Not Track&quot; feature that lets you tell websites that you do not want to
+                        have your online activities tracked. We currently do not respond to &quot;Do Not Track&quot; signals.
                       </p>
                     </div>
                   </div>
@@ -362,6 +362,15 @@ export default function PrivacyPolicyPage() {
           <p className="font-medium">Phone: (555) 123-4567</p>
           <p className="font-medium">Address: 123 Organic Way, Portland, OR 97201</p>
         </div>
+        <p className="text-gray-500 max-w-2xl mx-auto mb-6">
+          We value your privacy and are committed to protecting your personal information. If you have any questions about our privacy practices, please contact us at support@organicmarket.com. We&apos;re here to help!
+        </p>
+        <p className="text-gray-500 max-w-2xl mx-auto mb-6">
+          If you believe your privacy rights have been violated, you may file a complaint with us or with the appropriate regulatory authority. We&apos;ll not retaliate against you for filing a complaint.
+        </p>
+        <p className="text-gray-500 max-w-2xl mx-auto mb-6">
+          By using our website, you consent to our Privacy Policy. If you do not agree with our policy, please do not use our website. We may update this policy from time to time, so please review it regularly. If you have any questions, contact us at support@organicmarket.com. We will notify you of any material changes to this policy by posting a notice on our website or, if you have provided your email address, by sending you an email. Your continued use of our website after such changes constitutes your acceptance of the new policy. If you do not agree to the new policy, please discontinue use of our website. &quot;Effective Date: January 1, 2024&quot;
+        </p>
       </div>
     </div>
   )
@@ -371,7 +380,7 @@ const privacyCommitments = [
   {
     title: "Transparency",
     description:
-      "We're committed to being transparent about the data we collect and how we use it. We believe in clear, straightforward privacy policies.",
+      "We&apos;re committed to being transparent about the data we collect and how we use it. We believe in clear, straightforward privacy policies.",
     icon: ShieldCheck,
   },
   {

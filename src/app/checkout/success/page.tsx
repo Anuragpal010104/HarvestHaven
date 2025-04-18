@@ -101,7 +101,7 @@ export default function CheckoutSuccessPage() {
           <>
             <CardHeader className="text-center">
               <CardTitle className="text-2xl">Payment Failed</CardTitle>
-              <CardDescription>We're sorry, but there was an issue processing your payment.</CardDescription>
+              <CardDescription>We&apos;re sorry, but there was an issue processing your payment.</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">

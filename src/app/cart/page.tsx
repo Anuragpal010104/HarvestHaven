@@ -138,7 +138,11 @@ export default function CartPage() {
                           <Trash className="h-4 w-4" />
                         </Button>
                       </div>
-                      <p className="text-sm text-gray-500 mb-4">{item.description}</p>
+                      <p className="text-sm text-gray-500 mb-4">
+                        {typeof item.description === "string"
+                          ? item.description.replace(/'/g, "&apos;")
+                          : item.description}
+                      </p>
                       <div className="mt-auto flex items-center justify-between">
                         <div className="flex items-center border rounded-md">
                           <Button

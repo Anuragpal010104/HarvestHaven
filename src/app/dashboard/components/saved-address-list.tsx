@@ -54,7 +54,7 @@ const saveAddressToFirestore = async (address: Address) => {
 
 export function SavedAddressList() {
   const { toast } = useToast()
-  const { user, loading } = useAuth()
+  const { user } = useAuth()
   const [addresses, setAddresses] = useState<Address[]>([])
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)

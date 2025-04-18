@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
-import { Product, getWishlistItems, removeFromWishlist, addToCart as addToCartDb } from "@/lib/db";
+import { Product, getWishlistItems, removeFromWishlist } from "@/lib/db";
 import { toast } from "sonner";
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
@@ -67,7 +67,7 @@ export function WishlistItems() {
       if (cartSnap.exists()) {
         const existingItems = cartSnap.data().items || [];
         const existingItemIndex = existingItems.findIndex(
-          (item: any) => item.productId === cartItem.productId
+          (item: { productId: string }) => item.productId === cartItem.productId
         );
 
         if (existingItemIndex >= 0) {
@@ -87,7 +87,7 @@ export function WishlistItems() {
       toast.success("Added to cart", {
         description: `1 × ${product.title} added to your cart.`,
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error adding to cart:", error);
       toast.error("Failed to add to cart");
     }

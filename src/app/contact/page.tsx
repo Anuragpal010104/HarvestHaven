@@ -23,16 +23,16 @@ export default function ContactPage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleChange = (e: { target: { name: any; value: any } }) => {
+  const handleChange = (e: { target: { name: string; value: string } }) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleRadioChange = (value: any) => {
+  const handleRadioChange = (value: string) => {
     setFormData((prev) => ({ ...prev, inquiryType: value }))
   }
 
-  const handleSelectChange = (value: any) => {
+  const handleSelectChange = (value: string) => {
     setFormData((prev) => ({ ...prev, subject: value }))
   }
 
@@ -45,7 +45,7 @@ export default function ContactPage() {
       setIsSubmitting(false)
     //   toast({
     //     title: "Message sent",
-    //     description: "Thank you for your message. We'll get back to you soon!",
+    //     description: "Thank you for your message. We\'ll get back to you soon!",
     //   })
       setFormData({
         name: "",
@@ -65,7 +65,7 @@ export default function ContactPage() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl">Contact Us</h1>
           <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-            Have questions or feedback? We'd love to hear from you.
+            Have questions or feedback? We\'d love to hear from you.
           </p>
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold">Email</h3>
-                  <p className="text-sm text-gray-500">We'll respond within 24 hours</p>
+                  <p className="text-sm text-gray-500">We\'ll respond within 24 hours</p>
                   <p className="text-green-600 font-medium mt-1">support@organicmarket.com</p>
                 </div>
               </CardContent>
@@ -238,12 +238,12 @@ const faqs = [
   {
     question: "How do I track my order?",
     answer:
-      "You can track your order by logging into your account and visiting the 'My Orders' section. There you'll find tracking information for all your recent purchases.",
+      "You can track your order by logging into your account and visiting the 'My Orders' section. There you\'ll find tracking information for all your recent purchases.",
   },
   {
     question: "What is your return policy?",
     answer:
-      "We offer a 30-day return policy for most items. If you're not satisfied with your purchase, you can return it within 30 days for a full refund or exchange.",
+      "We offer a 30-day return policy for most items. If you\'re not satisfied with your purchase, you can return it within 30 days for a full refund or exchange.",
   },
   {
     question: "Are all your products certified organic?",

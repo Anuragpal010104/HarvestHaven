@@ -62,8 +62,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       setLoading(false);
       setError(null);
-    }, (error) => {
-      setError(error.message);
+    }, (error: unknown) => {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unknown error occurred");
+      }
       setLoading(false);
     });
     return () => unsubscribe();
@@ -73,8 +77,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setError(null);
       return await signInWithEmailAndPassword(auth, email, password);
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unknown error occurred");
+      }
       throw error;
     }
   }, []);
@@ -107,8 +115,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       return userCredential;
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unknown error occurred");
+      }
       throw error;
     }
   }, []);
@@ -118,8 +130,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       await signOut(auth);
       setUser(null);
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unknown error occurred");
+      }
       throw error;
     }
   }, []);

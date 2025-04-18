@@ -74,7 +74,7 @@ export const addProduct = async (
 
     const docRef = await addDoc(collection(db, "products"), productData);
     return docRef.id; // Return the generated ID
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error adding product:", error);
     throw new Error(`Failed to add product: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -90,7 +90,7 @@ export const getProductsBySeller = async (sellerId: string): Promise<Product[]> 
       id: doc.id,
       ...doc.data(),
     })) as Product[];
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error fetching products by seller:", error);
     throw new Error(`Failed to fetch products: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -104,7 +104,7 @@ export const getAllProducts = async (): Promise<Product[]> => {
       id: doc.id,
       ...doc.data(),
     })) as Product[];
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error fetching all products:", error);
     throw new Error(`Failed to fetch all products: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -119,7 +119,7 @@ export const getProductsByCategory = async (category: string): Promise<Product[]
       id: doc.id,
       ...doc.data(),
     })) as Product[];
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(`Error fetching products for category ${category}:`, error);
     throw new Error(`Failed to fetch products: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -134,7 +134,7 @@ export const getProductById = async (id: string): Promise<Product | null> => {
       return { id: docSnap.id, ...docSnap.data() } as Product;
     }
     return null;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(`Error fetching product ${id}:`, error);
     throw new Error(`Failed to fetch product: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -145,7 +145,7 @@ export const updateProduct = async (productId: string, updatedFields: Partial<Pr
   try {
     const productRef = doc(db, "products", productId);
     await updateDoc(productRef, updatedFields);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error updating product:", error);
     throw new Error(`Failed to update product: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -156,7 +156,7 @@ export const deleteProduct = async (productId: string): Promise<void> => {
   try {
     const productRef = doc(db, "products", productId);
     await deleteDoc(productRef);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error deleting product:", error);
     throw new Error(`Failed to delete product: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -194,7 +194,7 @@ export const addToCart = async (userId: string, product: Product): Promise<void>
         items: [cartItem],
       });
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error adding to cart:", error);
     throw new Error(`Failed to add to cart: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -207,7 +207,7 @@ export const addToWishlist = async (userId: string, productId: string): Promise<
     await updateDoc(buyerProfileRef, {
       wishlist: arrayUnion(productId)
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error adding to wishlist:", error);
     throw new Error(`Failed to add to wishlist: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -219,7 +219,7 @@ export const removeFromWishlist = async (userId: string, productId: string): Pro
     await updateDoc(buyerProfileRef, {
       wishlist: arrayRemove(productId)
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error removing from wishlist:", error);
     throw new Error(`Failed to remove from wishlist: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -243,7 +243,7 @@ export const getWishlistItems = async (userId: string): Promise<Product[]> => {
     );
 
     return wishlistProducts.filter((product): product is Product => product !== null);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error fetching wishlist items:", error);
     throw new Error(`Failed to fetch wishlist: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -261,7 +261,7 @@ export const addReview = async (productId: string, reviewContent: string): Promi
     await updateDoc(productRef, {
       reviews: arrayUnion(reviewData),
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error adding review:", error);
     throw new Error(`Failed to add review: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -279,7 +279,7 @@ export const getReviews = async (productId: string): Promise<{ content: string; 
     }
 
     return [];
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error fetching reviews:", error);
     throw new Error(`Failed to fetch reviews: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }

@@ -3,13 +3,7 @@
 import * as React from "react";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
-import { cva, type VariantProps } from "class-variance-authority"; // If you're using cva for variants
 import { cn } from "@/lib/utils";
-
-// Optional: Add VisuallyHidden utility if you want to hide the title visually
-const VisuallyHidden = ({ children, ...props }: React.HTMLProps<HTMLSpanElement>) => (
-  <span className="sr-only" {...props}>{children}</span>
-);
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;

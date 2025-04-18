@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -32,7 +32,7 @@ export default function SearchPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   // Mock product data with explicit typing
-  const allProducts: Product[] = [
+  const allProducts: Product[] = useMemo(() => [
     {
       id: 1,
       name: "Organic Avocados",
@@ -114,7 +114,7 @@ export default function SearchPage() {
       rating: 4.6,
       category: "pantry",
     },
-  ]
+  ], [])
 
   // Filter and sort products based on search term and filters
   useEffect(() => {

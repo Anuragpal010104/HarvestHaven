@@ -60,12 +60,17 @@ export default function SellerRegisterPage() {
 
       toast.success("Registration successful", { description: "Welcome to the seller portal!" })
       router.push("/seller/dashboard")
-    } catch (error: any) {
-      let message = error.message
-      if (error.code === "auth/email-already-in-use") {
-        message = "Email is already in use."
-      } else if (error.code === "auth/weak-password") {
-        message = "Password should be at least 6 characters."
+    } catch (error: unknown) {
+      let message = "Registration failed."
+      if (error && typeof error === "object" && "message" in error) {
+        message = (error as { message: string }).message
+      }
+      if (error && typeof error === "object" && "code" in error) {
+        if ((error as { code: string }).code === "auth/email-already-in-use") {
+          message = "Email is already in use."
+        } else if ((error as { code: string }).code === "auth/weak-password") {
+          message = "Password should be at least 6 characters."
+        }
       }
       console.error("Error details:", error)
       toast.error("Registration failed", { description: message })

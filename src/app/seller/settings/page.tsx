@@ -54,7 +54,7 @@ export default function SellerSettingsPage() {
     // })
   }
 
-  const handleShippingChange = (key: string, value: any) => {
+  const handleShippingChange = (key: string, value: string | boolean) => {
     setShippingSettings({
       ...shippingSettings,
       [key]: value,
@@ -65,7 +65,7 @@ export default function SellerSettingsPage() {
     // })
   }
 
-  const handleStorePrefsChange = (key: string, value: any) => {
+  const handleStorePrefsChange = (key: string, value: boolean) => {
     setStorePrefs({
       ...storePrefs,
       [key]: value,
@@ -194,7 +194,7 @@ export default function SellerSettingsPage() {
                     <Switch
                       id="free-shipping"
                       checked={shippingSettings.freeShipping}
-                      onCheckedChange={(checked: any) => handleShippingChange("freeShipping", checked)}
+                      onCheckedChange={(checked: boolean) => handleShippingChange("freeShipping", checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -205,7 +205,7 @@ export default function SellerSettingsPage() {
                     <Switch
                       id="flat-rate"
                       checked={shippingSettings.flatRate}
-                      onCheckedChange={(checked: any) => handleShippingChange("flatRate", checked)}
+                      onCheckedChange={(checked: boolean) => handleShippingChange("flatRate", checked)}
                     />
                   </div>
                   {shippingSettings.flatRate && (
@@ -254,7 +254,7 @@ export default function SellerSettingsPage() {
                     <Switch
                       id="auto-accept"
                       checked={storePrefs.autoAcceptOrders}
-                      onCheckedChange={(checked: any) => handleStorePrefsChange("autoAcceptOrders", checked)}
+                      onCheckedChange={(checked: boolean) => handleStorePrefsChange("autoAcceptOrders", checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -267,7 +267,7 @@ export default function SellerSettingsPage() {
                     <Switch
                       id="show-stock"
                       checked={storePrefs.showStockLevels}
-                      onCheckedChange={(checked: any) => handleStorePrefsChange("showStockLevels", checked)}
+                      onCheckedChange={(checked: boolean) => handleStorePrefsChange("showStockLevels", checked)}
                     />
                   </div>
                   <div className="flex items-center justify-between">
@@ -280,7 +280,7 @@ export default function SellerSettingsPage() {
                     <Switch
                       id="allow-backorders"
                       checked={storePrefs.allowBackorders}
-                      onCheckedChange={(checked: any) => handleStorePrefsChange("allowBackorders", checked)}
+                      onCheckedChange={(checked: boolean) => handleStorePrefsChange("allowBackorders", checked)}
                     />
                   </div>
                 </div>

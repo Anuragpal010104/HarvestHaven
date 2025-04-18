@@ -190,7 +190,7 @@ export default function ShippingPage() {
                 <div>
                   <h4 className="font-semibold">Track from Your Account</h4>
                   <p className="text-sm text-gray-500">
-                    Log in to your account and go to "My Orders" to view the status and tracking information for all your recent orders.
+                    Log in to your account and go to &quot;My Orders&quot; to view the status and tracking information for all your recent orders.
                   </p>
                 </div>
               </div>

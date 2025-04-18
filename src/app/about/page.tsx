@@ -63,11 +63,11 @@ const values = [
   {
     title: "Sustainability",
     description:
-      "We're committed to environmentally friendly practices throughout our supply chain, from farm to table.",
+      "We&apos;re committed to environmentally friendly practices throughout our supply chain, from farm to table.",
   },
   {
     title: "Transparency",
-    description: "We believe in complete transparency about our products, their origins, and how they're produced.",
+    description: "We believe in complete transparency about our products, their origins, and how they&apos;re produced.",
   },
   {
     title: "Community",

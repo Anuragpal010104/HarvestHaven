@@ -33,7 +33,7 @@ interface ProductBase {
 // }
 export interface Product {
   rating: ReactNode;
-  badge: any;
+  badge: ReactNode;
   image: string;
   id: string;
   title: string;
@@ -178,7 +178,7 @@ export const addToCart = async (userId: string, product: Product): Promise<void>
     if (cartSnap.exists()) {
       const existingItems = cartSnap.data().items || [];
       const existingItemIndex = existingItems.findIndex(
-        (item: any) => item.productId === cartItem.productId
+        (item: { productId: string }) => item.productId === cartItem.productId
       );
 
       if (existingItemIndex >= 0) {

@@ -39,7 +39,7 @@ const chartConfig = {
 }
 
 interface LineChartProps extends React.HTMLAttributes<HTMLDivElement> {
-  data: any[]
+  data: Record<string, unknown>[]
   xAxisKey: string
   yAxisKey: string
   height?: number
@@ -109,7 +109,7 @@ export function LineChart({
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[0.70rem] uppercase text-muted-foreground">{yAxisKey}</span>
-                          <span className="font-bold">{valueFormatter(payload[0].payload[yAxisKey])}</span>
+                          <span className="font-bold">{valueFormatter(payload[0].payload[yAxisKey] as number)}</span>
                         </div>
                       </div>
                     </div>
@@ -129,7 +129,7 @@ export function LineChart({
 }
 
 interface BarChartProps extends React.HTMLAttributes<HTMLDivElement> {
-  data: any[]
+  data: Record<string, unknown>[]
   xAxisKey: string
   yAxisKey: string
   height?: number
@@ -206,7 +206,7 @@ export function BarChart({
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[0.70rem] uppercase text-muted-foreground">{yAxisKey}</span>
-                          <span className="font-bold">{valueFormatter(payload[0].payload[yAxisKey])}</span>
+                          <span className="font-bold">{valueFormatter(payload[0].payload[yAxisKey] as number)}</span>
                         </div>
                       </div>
                     </div>
@@ -226,7 +226,7 @@ export function BarChart({
 }
 
 interface PieChartProps extends React.HTMLAttributes<HTMLDivElement> {
-  data: any[]
+  data: Record<string, unknown>[]
   height?: number
   showLegend?: boolean
   showTooltip?: boolean
@@ -288,7 +288,7 @@ export function PieChart({
 }
 
 interface AreaChartProps extends React.HTMLAttributes<HTMLDivElement> {
-  data: any[]
+  data: Record<string, unknown>[]
   xAxisKey: string
   yAxisKey: string
   height?: number
@@ -358,7 +358,7 @@ export function AreaChart({
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[0.70rem] uppercase text-muted-foreground">{yAxisKey}</span>
-                          <span className="font-bold">{valueFormatter(payload[0].payload[yAxisKey])}</span>
+                          <span className="font-bold">{valueFormatter(payload[0].payload[yAxisKey] as number)}</span>
                         </div>
                       </div>
                     </div>

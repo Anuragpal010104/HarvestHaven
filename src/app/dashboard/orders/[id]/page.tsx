@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -10,8 +10,8 @@ import { Separator } from "@/components/ui/separator"
 import { UserLayout } from "@/app/dashboard/user-layout"
 import { ArrowLeft, ChevronRight, Package, RefreshCw, Truck } from "lucide-react"
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
-  const orderId = params.id
+export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   // Mock order data
   const [order] = useState({
@@ -105,7 +105,17 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         description: "Your order has been delivered successfully.",
       },
     ],
-  })
+  });
+
+  useEffect(() => {
+    params.then((resolvedParams) => {
+      setOrderId(resolvedParams.id);
+    });
+  }, [params]);
+
+  if (!orderId) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <UserLayout>
